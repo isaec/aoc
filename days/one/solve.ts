@@ -1,8 +1,6 @@
-// read input.txt as a string
-const input = Deno.readTextFileSync("./input.txt");
+import { readInput } from "../util.ts";
 
-// split input into lines
-const lines = input.split("\n");
+const { lines, text } = await readInput(import.meta.url);
 
 const caloryArray = [];
 
