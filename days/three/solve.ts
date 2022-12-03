@@ -27,25 +27,13 @@ await executor.part1(async ({ text, lines }) => {
   return sum;
 });
 
+await executor.testPart1([
+  ["example 1", [`vJrwpWtwJgWrhcsFMMfFFhFp`, 16]],
+  ["example 2", [`jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL`, 38]],
+]);
+
 await executor.part2(async ({ text, lines }) => {
   let sum = 0;
-
-  // for (const line of lines) {
-  //   // split line in half by length
-  //   // line has no spaces
-  //   const half = line.length / 2;
-  //   const firstHalf = line.slice(0, half);
-  //   const secondHalf = line.slice(half);
-
-  //   // find the item in both halves
-  //   const item = firstHalf.split("").find((c) => secondHalf.includes(c));
-  //   if (item === undefined) throw Error("no item found");
-
-  //   // add to sum
-  //   sum += getPriority(item);
-  // }
-
-  // pt2
 
   // take the lines in chunks of 3
   for (let i = 0; i < lines.length; i += 3) {
@@ -64,3 +52,15 @@ await executor.part2(async ({ text, lines }) => {
   }
   return sum;
 });
+
+await executor.testPart2([
+  [
+    "example 1",
+    [
+      `vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg`,
+      18,
+    ],
+  ],
+]);

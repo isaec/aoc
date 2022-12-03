@@ -144,24 +144,30 @@ export default class Executor {
       const expandedInput =
         input === "input.txt" ? (await this.input).text : input;
       tryDrawLine();
-      const answer = await fn({
-        text: expandedInput,
-        lines: expandedInput.split("\n"),
-      });
-      if (answer === expected) {
-        console.log(gray(`[${green("✔")}] ${testLabel}`));
-      } else if (answer == expected) {
-        console.log(
-          gray(
-            `[${green("?")}] ${testLabel} ${dim(
-              `${printAsType(answer)} == ${printAsType(expected)}`
-            )}`
-          )
-        );
-      } else {
+      try {
+        const answer = await fn({
+          text: expandedInput,
+          lines: expandedInput.split("\n"),
+        });
+        if (answer === expected) {
+          console.log(gray(`[${green("✔")}] ${testLabel}`));
+        } else if (answer == expected) {
+          console.log(
+            gray(
+              `[${green("?")}] ${testLabel} ${dim(
+                `${printAsType(answer)} == ${printAsType(expected)}`
+              )}`
+            )
+          );
+        } else {
+          console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
+          console.log(`${dim(green("expected:"))} ${expected}`);
+          console.log(`${red("received:")} ${answer}\n`);
+          failed++;
+        }
+      } catch (e) {
         console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
-        console.log(`${dim(green("expected:"))} ${expected}`);
-        console.log(`${red("received:")} ${answer}\n`);
+        console.error(e, "\n");
         failed++;
       }
     }
