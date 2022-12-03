@@ -28,8 +28,8 @@ await executor.part1(async ({ text, lines }) => {
 });
 
 await executor.testPart1([
-  ["example 1", [`vJrwpWtwJgWrhcsFMMfFFhFp`, 16]],
-  ["example 2", [`jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL`, 38]],
+  [`vJrwpWtwJgWrhcsFMMfFFhFp`, 16],
+  [`jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL`, 38],
 ]);
 
 await executor.part2(async ({ text, lines }) => {

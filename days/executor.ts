@@ -13,6 +13,15 @@ type Input = Readonly<{
   lines: readonly string[];
 }>;
 
+type TestCaseData = [string, string | number | undefined];
+type LabeledTestCase = [string, TestCaseData];
+
+const isLabeledTestCase = (
+  testCase: TestCaseData | LabeledTestCase
+): testCase is LabeledTestCase => {
+  return testCase.length === 2 && Array.isArray(testCase[1]);
+};
+
 const readInput = async (rel: string): Promise<Input> => {
   const url = new URL("./input.txt", rel);
   const file = await Deno.readTextFile(url);
@@ -121,7 +130,7 @@ export default class Executor {
     /** existing label */
     label: string,
     /** test data with results */
-    tests: [string, [string, string | number | undefined]][]
+    tests: Array<[string, TestCaseData] | TestCaseData>
   ) {
     const fn = this.functionMap.get(label);
     if (!fn) throw new Error(`no function found for label ${label}`);
@@ -134,13 +143,17 @@ export default class Executor {
     };
 
     let failed = 0;
-    for (const [testLabel, [input, expected]] of tests) {
+    for (const [i, test] of tests.entries()) {
+      const [testLabel, [input, expected]]: LabeledTestCase =
+        !isLabeledTestCase(test) ? [`example ${i + 1}`, test] : test;
+
       if (
-        testLabel === "description" &&
+        (testLabel === "description" || !isLabeledTestCase(test)) &&
         input === "input" &&
         expected === "expected"
       )
         continue;
+
       const expandedInput =
         input === "input.txt" ? (await this.input).text : input;
       tryDrawLine();
