@@ -2,4 +2,4 @@
 
 clear
 
-deno run --allow-all --watch ./days/$argv[1]/solve.ts
+deno run --allow-all --unstable --watch ./days/$argv[1]/solve.ts
