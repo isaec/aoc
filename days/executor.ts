@@ -5,11 +5,19 @@ import {
   gray,
   dim,
 } from "https://deno.land/std@0.153.0/fmt/colors.ts";
-import { readInput } from "./util.ts";
 
-type Input = {
+type Input = Readonly<{
   text: string;
-  lines: string[];
+  lines: readonly string[];
+}>;
+
+const readInput = async (rel: string): Promise<Input> => {
+  const url = new URL("./input.txt", rel);
+  const file = await Deno.readTextFile(url);
+  return {
+    text: file,
+    lines: file.split("\n"),
+  };
 };
 
 const barLog = (
@@ -49,6 +57,8 @@ export default class Executor {
   private shouldAbort = false;
   private result: string | number | undefined;
 
+  private readonly input;
+
   private functionMap = new Map<
     string,
     Parameters<typeof Executor.prototype.part>[1]
@@ -56,6 +66,7 @@ export default class Executor {
 
   constructor(path: string) {
     this.path = path;
+    this.input = readInput(path);
   }
 
   private async applyClipboard() {
@@ -69,7 +80,7 @@ export default class Executor {
     this.functionMap.set(label, fn);
     if (this.shouldAbort) return;
     barLog(`${label} execution`, blue, true);
-    const input = await readInput(this.path);
+    const input = await this.input;
     const start = performance.now();
     try {
       const answer = await fn(input);

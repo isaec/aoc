@@ -7,20 +7,3 @@ export const collectIterable = async <T>(
   }
   return result;
 };
-
-/**
- * automatically find the input.txt file at the same level as the current deno file
- */
-export const readInput = async (
-  rel: string
-): Promise<{
-  text: string;
-  lines: string[];
-}> => {
-  const url = new URL("./input.txt", rel);
-  const file = await Deno.readTextFile(url);
-  return {
-    text: file,
-    lines: file.split("\n"),
-  };
-};
