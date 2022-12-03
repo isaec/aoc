@@ -4,6 +4,8 @@ import {
   green,
   gray,
   dim,
+  yellow,
+  bold,
 } from "https://deno.land/std@0.153.0/fmt/colors.ts";
 
 type Input = Readonly<{
@@ -52,10 +54,16 @@ const setClipboard = async (str: string) => {
   console.log(`\nCopied to clipboard: ${str}\n`);
 };
 
+const printAsType = (v: string | number | undefined | void) => {
+  if (v === undefined) return "undefined";
+  if (typeof v === "string") return `"${v}"`;
+  return yellow(v.toString());
+};
+
 export default class Executor {
   private readonly path: string;
   private shouldAbort = false;
-  private result: string | number | undefined;
+  private result: { answer: string | number; label: string } | undefined;
 
   private readonly input;
 
@@ -70,7 +78,8 @@ export default class Executor {
   }
 
   private async applyClipboard() {
-    if (this.result) await setClipboard(this.result.toString());
+    if (this.result !== undefined)
+      await setClipboard(this.result.answer.toString());
   }
 
   private async part(
@@ -85,8 +94,8 @@ export default class Executor {
     try {
       const answer = await fn(input);
       if (answer !== undefined) {
-        this.result = answer;
-        console.log("answer", answer);
+        this.result = { answer, label };
+        console.log(bold("answer:"), answer);
         barLog(
           `${label} execution took ${formatMs(performance.now() - start)}`,
           green
@@ -132,10 +141,23 @@ export default class Executor {
         expected === "expected"
       )
         continue;
+      const expandedInput =
+        input === "input.txt" ? (await this.input).text : input;
       tryDrawLine();
-      const answer = await fn({ text: input, lines: input.split("\n") });
+      const answer = await fn({
+        text: expandedInput,
+        lines: expandedInput.split("\n"),
+      });
       if (answer === expected) {
         console.log(gray(`[${green("✔")}] ${testLabel}`));
+      } else if (answer == expected) {
+        console.log(
+          gray(
+            `[${green("?")}] ${testLabel} ${dim(
+              `${printAsType(answer)} == ${printAsType(expected)}`
+            )}`
+          )
+        );
       } else {
         console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
         console.log(`${dim(green("expected:"))} ${expected}`);
@@ -150,6 +172,8 @@ export default class Executor {
         }`,
         failed === 0 ? green : red
       );
+    // don't use this value if the test fails
+    if (failed > 0 && this.result?.label === label) this.result = undefined;
   }
 
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
