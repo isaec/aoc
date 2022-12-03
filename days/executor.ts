@@ -1,4 +1,10 @@
-import { blue, red, green } from "https://deno.land/std@0.153.0/fmt/colors.ts";
+import {
+  blue,
+  red,
+  green,
+  gray,
+  dim,
+} from "https://deno.land/std@0.153.0/fmt/colors.ts";
 import { readInput } from "./util.ts";
 
 type Input = {
@@ -43,6 +49,11 @@ export default class Executor {
   private shouldAbort = false;
   private result: string | number | undefined;
 
+  private functionMap = new Map<
+    string,
+    Parameters<typeof Executor.prototype.part>[1]
+  >();
+
   constructor(path: string) {
     this.path = path;
   }
@@ -55,6 +66,7 @@ export default class Executor {
     label: string,
     fn: (input: Input) => Promise<void | undefined | number | string>
   ) {
+    this.functionMap.set(label, fn);
     if (this.shouldAbort) return;
     barLog(`${label} execution`, blue, true);
     const input = await readInput(this.path);
@@ -85,12 +97,64 @@ export default class Executor {
     }
   }
 
+  private async test(
+    /** existing label */
+    label: string,
+    /** test data with results */
+    tests: [string, [string, string | number | undefined]][]
+  ) {
+    const fn = this.functionMap.get(label);
+    if (!fn) throw new Error(`no function found for label ${label}`);
+    let didDrawLine = false;
+    const tryDrawLine = () => {
+      if (!didDrawLine) {
+        barLog(`${label} tests`, blue, true);
+        didDrawLine = true;
+      }
+    };
+
+    let failed = 0;
+    for (const [testLabel, [input, expected]] of tests) {
+      if (
+        testLabel === "description" &&
+        input === "input" &&
+        expected === "expected"
+      )
+        continue;
+      tryDrawLine();
+      const answer = await fn({ text: input, lines: input.split("\n") });
+      if (answer === expected) {
+        console.log(gray(`[${green("✔")}] ${testLabel}`));
+      } else {
+        console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
+        console.log(`${dim(green("expected:"))} ${expected}`);
+        console.log(`${red("received:")} ${answer}\n`);
+        failed++;
+      }
+    }
+    if (didDrawLine)
+      barLog(
+        `${label} tests complete, ${
+          failed === 0 ? "all passed" : `${failed}/${tests.length} failed`
+        }`,
+        failed === 0 ? green : red
+      );
+  }
+
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
     await this.part("part 1", fn);
+  }
+
+  public async testPart1(tests: Parameters<typeof Executor.prototype.test>[1]) {
+    await this.test("part 1", tests);
   }
 
   public async part2(fn: Parameters<typeof Executor.prototype.part>[1]) {
     await this.part("part 2", fn);
     await this.applyClipboard();
+  }
+
+  public async testPart2(tests: Parameters<typeof Executor.prototype.test>[1]) {
+    await this.test("part 2", tests);
   }
 }
