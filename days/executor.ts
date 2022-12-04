@@ -13,6 +13,10 @@ type Input = Readonly<{
   lines: readonly string[];
 }>;
 
+type Ctx = Readonly<{
+  log: typeof console.log;
+}>;
+
 type TestCaseData = [string, string | number | undefined];
 type LabeledTestCase = [string, TestCaseData];
 
@@ -93,7 +97,7 @@ export default class Executor {
 
   private async part(
     label: string,
-    fn: (input: Input) => Promise<void | undefined | number | string>
+    fn: (input: Input, ctx: Ctx) => Promise<void | undefined | number | string>
   ) {
     this.functionMap.set(label, fn);
     if (this.shouldAbort) return;
@@ -101,7 +105,10 @@ export default class Executor {
     const input = await this.input;
     const start = performance.now();
     try {
-      const answer = await fn(input);
+      const answer = await fn(input, {
+        // noop
+        log: () => {},
+      });
       if (answer !== undefined) {
         this.result = { answer, label };
         console.log(bold("answer:"), answer);
@@ -158,10 +165,16 @@ export default class Executor {
         input === "input.txt" ? (await this.input).text : input;
       tryDrawLine();
       try {
-        const answer = await fn({
-          text: expandedInput,
-          lines: expandedInput.split("\n"),
-        });
+        const answer = await fn(
+          {
+            text: expandedInput,
+            lines: expandedInput.split("\n"),
+          },
+          {
+            // not noop because we are in a test
+            log: (...args) => console.log(dim("  |"), ...args),
+          }
+        );
         if (answer === expected) {
           console.log(gray(`[${green("✔")}] ${testLabel}`));
         } else if (answer == expected) {

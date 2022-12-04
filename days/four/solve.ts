@@ -5,9 +5,10 @@ const ex = new Executor(import.meta.url);
 
 // format: a-b,c-d ranges
 // find the number of lines where one range fully encloses the other
-await ex.part1(async ({ text, lines }) => {
+await ex.part1(async ({ text, lines }, ctx) => {
   let count = 0;
   for (const line of lines) {
+    ctx.log(line);
     const [a, b, c, d] = line.split(/-|,/).map(Number);
     if (a <= c && b >= d) count++;
     else if (c <= a && d >= b) count++;
@@ -16,7 +17,9 @@ await ex.part1(async ({ text, lines }) => {
 });
 
 await ex.testPart1([
-  [`2-4,1-5`, 1],
+  ex.c`
+2-4,1-5
+`(1),
 
   ex.c`
 2-4,6-8
