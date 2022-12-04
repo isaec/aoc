@@ -196,12 +196,18 @@ export default class Executor {
   }
 
   /**
-   * use this for an input template literal to remove the first and last line if it's empty
+   * use this for a test case
+   * input template literal to remove the first and last line if it's empty
+   * @returns a function that takes the expected result, and returns {@link TestCaseData}
    */
-  public i(strings: readonly string[], ...values: unknown[]) {
-    return String.raw({ raw: strings }, ...values)
+  public c(
+    strings: readonly string[],
+    ...values: unknown[]
+  ): (expected: TestCaseData[1]) => TestCaseData {
+    const inputString = String.raw({ raw: strings }, ...values)
       .replace(/^\s*\n/, "")
       .replace(/\n\s*$/, "");
+    return (expected: TestCaseData[1]) => [inputString, expected];
   }
 
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {

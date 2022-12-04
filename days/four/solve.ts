@@ -17,24 +17,20 @@ await ex.part1(async ({ text, lines }) => {
 
 await ex.testPart1([
   [`2-4,1-5`, 1],
-  [
-    ex.i`
+
+  ex.c`
 2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7
 6-6,4-6
 2-6,4-8
-`,
-    2,
-  ],
-  [
-    ex.i`
+`(2),
+
+  ex.c`
 2-4,6-8
 2-6,3-5
-`,
-    1,
-  ],
+`(1),
 ]);
 
 // find count of range overlap
