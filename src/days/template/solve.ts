@@ -1,4 +1,6 @@
 // deno-lint-ignore-file require-await
+import {} from "@util/set.ts";
+import {} from "@util/collect.ts";
 import Executor from "@util/executor.ts";
 
 const ex = new Executor(import.meta.url);
