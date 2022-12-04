@@ -195,6 +195,15 @@ export default class Executor {
     if (failed > 0 && this.result?.label === label) this.result = undefined;
   }
 
+  /**
+   * use this for an input template literal to remove the first and last line if it's empty
+   */
+  public i(strings: readonly string[], ...values: unknown[]) {
+    return String.raw({ raw: strings }, ...values)
+      .replace(/^\s*\n/, "")
+      .replace(/\n\s*$/, "");
+  }
+
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
     await this.part("part 1", fn);
   }
