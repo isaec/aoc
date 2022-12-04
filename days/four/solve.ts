@@ -3,16 +3,64 @@ import Executor from "../executor.ts";
 
 const ex = new Executor(import.meta.url);
 
-await ex.part1(async ({ text, lines }) => {});
+// format: a-b,c-d ranges
+// find the number of lines where one range fully encloses the other
+await ex.part1(async ({ text, lines }) => {
+  let count = 0;
+  for (const line of lines) {
+    const [a, b, c, d] = line.split(/-|,/).map(Number);
+    if (a <= c && b >= d) count++;
+    else if (c <= a && d >= b) count++;
+  }
+  return count;
+});
 
 await ex.testPart1([
-  [`input`, "expected"],
-  [`input`, "expected"],
+  [`2-4,1-5`, 1],
+  [
+    `2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8`,
+    2,
+  ],
+  [
+    `2-4,6-8
+    2-6,3-5`,
+    1,
+  ],
 ]);
 
-await ex.part2(async ({ text, lines }) => {});
+// find count of range overlap
+await ex.part2(async ({ text, lines }) => {
+  let countOfOverlaps = 0;
+  for (const line of lines) {
+    const [a, b, c, d] = line.split(/-|,/).map(Number);
+    // generate sets for each range
+    const setA = new Set();
+    const setB = new Set();
+    for (let i = a; i <= b; i++) setA.add(i);
+    for (let i = c; i <= d; i++) setB.add(i);
+    // determine if any values overlap, if so add one to count
+    for (const val of setA) {
+      if (setB.has(val)) {
+        countOfOverlaps++;
+        break;
+      }
+    }
+  }
+  return countOfOverlaps;
+});
 
 await ex.testPart2([
-  [`input`, "expected"],
-  [`input`, "expected"],
+  [`1-3,3-5`, 1],
+  [
+    `5-7,7-9
+  2-8,3-7
+  6-6,4-6
+  2-6,4-8`,
+    4,
+  ],
 ]);
