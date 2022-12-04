@@ -165,6 +165,13 @@ export default class Executor {
         input === "input.txt" ? (await this.input).text : input;
       tryDrawLine();
       try {
+        let putHeader = false;
+        const tryPutHeader = () => {
+          if (!putHeader) {
+            console.log(dim(`\n  ┌─${"─".repeat(testLabel.length)}`));
+            putHeader = true;
+          }
+        };
         const answer = await fn(
           {
             text: expandedInput,
@@ -172,7 +179,10 @@ export default class Executor {
           },
           {
             // not noop because we are in a test
-            log: (...args) => console.log(dim("  |"), ...args),
+            log: (...args) => {
+              tryPutHeader();
+              console.log(dim("  │"), ...args);
+            },
           }
         );
         if (answer === expected) {

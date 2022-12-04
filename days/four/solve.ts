@@ -8,10 +8,10 @@ const ex = new Executor(import.meta.url);
 await ex.part1(async ({ text, lines }, ctx) => {
   let count = 0;
   for (const line of lines) {
-    ctx.log(line);
     const [a, b, c, d] = line.split(/-|,/).map(Number);
     if (a <= c && b >= d) count++;
     else if (c <= a && d >= b) count++;
+    ctx.log({ line, count });
   }
   return count;
 });
