@@ -49,12 +49,15 @@ const barLog = (
     )
   );
 
-const formatter = new Intl.NumberFormat("en-US", {
+const msFormatter = new Intl.NumberFormat("en-US", {
   style: "unit",
   unit: "millisecond",
   unitDisplay: "narrow",
 });
-const formatMs = (ms: number) => formatter.format(ms);
+const formatMs = (ms: number) => msFormatter.format(ms);
+
+const numberFormatter = new Intl.NumberFormat("en-US");
+const formatNumber = (n: number) => numberFormatter.format(n);
 
 const setClipboard = async (str: string) => {
   const p = Deno.run({
@@ -73,6 +76,35 @@ const printAsType = (v: string | number | undefined | void) => {
   if (typeof v === "string") return `"${v}"`;
   return yellow(v.toString());
 };
+
+class LoopBreaker {
+  readonly max: number;
+  private ticks = 0;
+
+  constructor(max: number = 500_000) {
+    this.max = max;
+  }
+
+  tick() {
+    if (this.ticks++ > this.max) {
+      throw new Error(
+        `Loop exceeded ${bold(magenta(formatNumber(this.max)))} ticks`
+      );
+    }
+  }
+
+  getTickFunction() {
+    return this.tick.bind(this);
+  }
+
+  getTicks() {
+    return this.ticks;
+  }
+
+  tripped() {
+    return this.ticks > this.max;
+  }
+}
 
 export default class Executor {
   private readonly path: string;
@@ -100,7 +132,8 @@ export default class Executor {
     label: string,
     fn: (
       input: Input,
-      console: TestConsole
+      console: TestConsole,
+      loopTick: LoopBreaker["tick"]
     ) => Promise<void | undefined | number | string>
   ) {
     this.functionMap.set(label, fn);
@@ -108,11 +141,16 @@ export default class Executor {
     barLog(`${label} execution`, blue, true);
     const input = await this.input;
     const start = performance.now();
+    const loopBreaker = new LoopBreaker();
     try {
-      const answer = await fn(input, {
-        // noop
-        log: () => {},
-      });
+      const answer = await fn(
+        input,
+        {
+          // noop
+          log: () => {},
+        },
+        loopBreaker.getTickFunction()
+      );
       if (answer !== undefined) {
         this.result = { answer, label };
         console.log(bold("answer:"), answer);
@@ -176,6 +214,7 @@ export default class Executor {
             putHeader = true;
           }
         };
+        const loopBreaker = new LoopBreaker();
         const answer = await fn(
           {
             text: expandedInput,
@@ -187,7 +226,8 @@ export default class Executor {
               tryPutHeader();
               console.log(dim("  │"), ...args);
             },
-          }
+          },
+          loopBreaker.getTickFunction()
         );
         switch (true) {
           case answer === expected:

@@ -16,7 +16,7 @@ const ex = new Executor(import.meta.url);
 
 const allDifferent = (ch: string[]) => new Set(ch).size === ch.length;
 
-await ex.part1(async ({ text, lines }, console) => {
+await ex.part1(async ({ text, lines }, console, tick) => {
   // detect first four characters that are all different
 
   let processed = 0;
@@ -26,6 +26,7 @@ await ex.part1(async ({ text, lines }, console) => {
   for (let i = 0; i < 4; i++) {
     charSection.unshift(chars.shift()!);
     processed++;
+    tick();
   }
 
   while (!allDifferent(charSection)) {
@@ -49,12 +50,15 @@ zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw
 ]);
 
 const size = 14;
-await ex.part2(async ({ text, lines }, console) => {
+await ex.part2(async ({ text, lines }, console, tick) => {
   const chars = text.split("");
 
   let processed = 0;
 
-  while (!allDifferent(chars.slice(processed, processed + size))) processed++;
+  while (!allDifferent(chars.slice(processed, processed + size))) {
+    processed++;
+    tick();
+  }
 
   return processed + size;
 });

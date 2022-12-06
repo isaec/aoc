@@ -9,7 +9,7 @@ import Executor from "@util/executor.ts";
 
 const ex = new Executor(import.meta.url);
 
-await ex.part1(async ({ text, lines }, console) => {});
+await ex.part1(async ({ text, lines }, console, tick) => {});
 
 await ex.testPart1([
   ex.c`
@@ -21,7 +21,7 @@ input
 `(),
 ]);
 
-await ex.part2(async ({ text, lines }, console) => {});
+await ex.part2(async ({ text, lines }, console, tick) => {});
 
 await ex.testPart2([
   ex.c`
