@@ -1,5 +1,8 @@
 {
   "imports": {
-    "@util/": "./src/util/"
+    "@src/": "./src/",
+    "@util/": "./src/util/",
+    "@test_deps": "./src/test_deps.ts",
+    "@deps": "./src/deps.ts"
   }
 }

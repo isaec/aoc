@@ -6,6 +6,7 @@ import {
   dim,
   yellow,
   bold,
+  magenta,
 } from "https://deno.land/std@0.153.0/fmt/colors.ts";
 
 type Input = Readonly<{
@@ -157,7 +158,7 @@ export default class Executor {
       if (
         (testLabel === "description" || !isLabeledTestCase(test)) &&
         input === "input" &&
-        expected === "expected"
+        (expected === "expected" || expected === undefined)
       )
         continue;
 
@@ -185,21 +186,28 @@ export default class Executor {
             },
           }
         );
-        if (answer === expected) {
-          console.log(gray(`[${green("✔")}] ${testLabel}`));
-        } else if (answer == expected) {
-          console.log(
-            gray(
-              `[${green("?")}] ${testLabel} ${dim(
-                `${printAsType(answer)} == ${printAsType(expected)}`
-              )}`
-            )
-          );
-        } else {
-          console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
-          console.log(`${dim(green("expected:"))} ${expected}`);
-          console.log(`${red("received:")} ${answer}\n`);
-          failed++;
+        switch (true) {
+          case answer === expected:
+            console.log(gray(`[${green("✔")}] ${testLabel}`));
+            break;
+          case answer == expected:
+            console.log(
+              gray(
+                `[${green("?")}] ${testLabel} ${dim(
+                  `${printAsType(answer)} == ${printAsType(expected)}`
+                )}`
+              )
+            );
+            break;
+          case expected === undefined:
+            console.log(gray(`[${magenta("=")}] ${testLabel}`));
+            console.log(`${magenta("received:")} ${answer}\n`);
+            break;
+          default:
+            console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
+            console.log(`${dim(green("expected:"))} ${expected}`);
+            console.log(`${red("received:")} ${answer}\n`);
+            failed++;
         }
       } catch (e) {
         console.log(gray(`[${red("✗")}] ${red(testLabel)}`));
@@ -220,17 +228,19 @@ export default class Executor {
 
   /**
    * use this for a test case
-   * input template literal to remove the first and last line if it's empty
+   * takes an input template literal to remove the first and last line if it's empty
+   * makes a function that allows you to pass the expected result
+   * if you don't pass the expected result, the test case will be run but not checked
    * @returns a function that takes the expected result, and returns {@link TestCaseData}
    */
   public c(
     strings: readonly string[],
     ...values: unknown[]
-  ): (expected: TestCaseData[1]) => TestCaseData {
+  ): (expected?: TestCaseData[1]) => TestCaseData {
     const inputString = String.raw({ raw: strings }, ...values)
       .replace(/^\s*\n/, "")
       .replace(/\n\s*$/, "");
-    return (expected: TestCaseData[1]) => [inputString, expected];
+    return (expected) => [inputString, expected];
   }
 
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
