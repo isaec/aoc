@@ -14,10 +14,7 @@ zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw: first marker after character 11
 
 const ex = new Executor(import.meta.url);
 
-const allDifferent = (ch: string[]) => {
-  const set = new Set(ch);
-  return set.size === ch.length;
-};
+const allDifferent = (ch: string[]) => new Set(ch).size === ch.length;
 
 await ex.part1(async ({ text, lines }, console) => {
   // detect first four characters that are all different
@@ -51,26 +48,15 @@ zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw
 `(11),
 ]);
 
+const size = 14;
 await ex.part2(async ({ text, lines }, console) => {
-  // detect first four characters that are all different
+  const chars = text.split("");
 
   let processed = 0;
 
-  const chars = text.split("");
-  const charSection: string[] = [];
-  for (let i = 0; i < 14; i++) {
-    charSection.unshift(chars.shift()!);
-    processed++;
-  }
+  while (!allDifferent(chars.slice(processed, processed + size))) processed++;
 
-  while (!allDifferent(charSection)) {
-    // console.log("section", charSection.join(""));
-    charSection.unshift(chars.shift()!);
-    charSection.pop();
-    processed++;
-  }
-
-  return processed;
+  return processed + size;
 });
 
 await ex.testPart2([
@@ -79,6 +65,6 @@ mjqjpqmgbljsphdztnvjfqwrcgsmlb
 `(19),
 
   ex.c`
-input
-`(),
+nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg
+`(29),
 ]);
