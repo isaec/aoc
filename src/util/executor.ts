@@ -14,7 +14,7 @@ type Input = Readonly<{
   lines: readonly string[];
 }>;
 
-type Ctx = Readonly<{
+type TestConsole = Readonly<{
   log: typeof console.log;
 }>;
 
@@ -98,7 +98,10 @@ export default class Executor {
 
   private async part(
     label: string,
-    fn: (input: Input, ctx: Ctx) => Promise<void | undefined | number | string>
+    fn: (
+      input: Input,
+      console: TestConsole
+    ) => Promise<void | undefined | number | string>
   ) {
     this.functionMap.set(label, fn);
     if (this.shouldAbort) return;
