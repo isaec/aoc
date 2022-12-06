@@ -9,7 +9,10 @@ import Executor from "@util/executor.ts";
 
 const ex = new Executor(import.meta.url);
 
-await ex.part1(async ({ text, lines }, console, tick) => {});
+// deno-lint-ignore no-unused-vars
+await ex.part1(async ({ text, lines }, console, tick) => {
+  // goal:
+});
 
 await ex.testPart1([
   ex.c`
@@ -21,7 +24,10 @@ input
 `(),
 ]);
 
-await ex.part2(async ({ text, lines }, console, tick) => {});
+// deno-lint-ignore no-unused-vars
+await ex.part2(async ({ text, lines }, console, tick) => {
+  // goal:
+});
 
 await ex.testPart2([
   ex.c`
