@@ -1,13 +1,14 @@
 import { describe, expect, it, run } from "@test_deps";
 
-import Group, { SetView } from "./BiMap.ts";
+import { BiMap } from "./BiMap.ts";
+import { SetView } from "./SetView.ts";
 
 const makeSetView = <T>(values: T[] = []): SetView<T> =>
   new SetView(new Set(values));
 
 describe("BiMap", () => {
   it("should add, remove, and remember values", () => {
-    const group = new Group<string, number>();
+    const group = new BiMap<string, number>();
     group.add("a", 1);
     group.add("a", 2);
     group.add("b", 2);
@@ -29,7 +30,7 @@ describe("BiMap", () => {
   });
 
   it("should return empty sets for unknown keys and values", () => {
-    const group = new Group<string, number>();
+    const group = new BiMap<string, number>();
     expect(group.getKeys(1)).toEqual(makeSetView());
     expect(group.getKeys(2)).toEqual(makeSetView());
     expect(group.getKeys(3)).toEqual(makeSetView());
@@ -38,7 +39,7 @@ describe("BiMap", () => {
   });
 
   it("should not allow modifying the returned sets", () => {
-    const group = new Group<string, number>();
+    const group = new BiMap<string, number>();
     group.add("a", 1);
     group.add("a", 2);
     group.add("b", 2);
