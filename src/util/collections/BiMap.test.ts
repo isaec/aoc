@@ -1,65 +1,68 @@
 import { describe, expect, it, run } from "@test_deps";
 
 import { BiMap } from "./BiMap.ts";
-import { SetView } from "./SetView.ts";
-
-const makeSetView = <T>(values: T[] = []): SetView<T> =>
-  new SetView(new Set(values));
 
 describe("BiMap", () => {
-  it("should add, remove, and remember values", () => {
-    const group = new BiMap<string, number>();
-    group.add("a", 1);
-    group.add("a", 2);
-    group.add("b", 2);
-    group.add("b", 3);
-    expect(group.getKeys(1)).toEqual(makeSetView(["a"]));
-    expect(group.getKeys(2)).toEqual(makeSetView(["a", "b"]));
-    expect(group.getKeys(3)).toEqual(makeSetView(["b"]));
-    expect(group.getValues("a")).toEqual(makeSetView([1, 2]));
-    expect(group.getValues("b")).toEqual(makeSetView([2, 3]));
-    group.remove("a", 1);
-    group.remove("a", 2);
-    group.remove("b", 2);
-    group.remove("b", 3);
-    expect(group.getKeys(1)).toEqual(makeSetView());
-    expect(group.getKeys(2)).toEqual(makeSetView());
-    expect(group.getKeys(3)).toEqual(makeSetView());
-    expect(group.getValues("a")).toEqual(makeSetView());
-    expect(group.getValues("b")).toEqual(makeSetView());
+  it("should add a key-value pair", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    expect(map.get("a")).toBe(1);
+    expect(map.getKey(1)).toBe("a");
   });
 
-  it("should return empty sets for unknown keys and values", () => {
-    const group = new BiMap<string, number>();
-    expect(group.getKeys(1)).toEqual(makeSetView());
-    expect(group.getKeys(2)).toEqual(makeSetView());
-    expect(group.getKeys(3)).toEqual(makeSetView());
-    expect(group.getValues("a")).toEqual(makeSetView());
-    expect(group.getValues("b")).toEqual(makeSetView());
+  it("should delete a key-value pair", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    expect(map.delete("a")).toBe(true);
+    expect(map.get("a")).toBe(undefined);
+    expect(map.getKey(1)).toBe(undefined);
   });
 
-  it("should not allow modifying the returned sets", () => {
-    const group = new BiMap<string, number>();
-    group.add("a", 1);
-    group.add("a", 2);
-    group.add("b", 2);
-    group.add("b", 3);
-    expect(() => {
-      // @ts-ignore: intentionally testing for runtime errors
-      group.getKeys(1).add("c");
-    }).toThrow();
-    expect(() => {
-      // @ts-ignore: intentionally testing for runtime errors
-      group.getKeys(2).delete("a");
-    }).toThrow();
-    expect(() => {
-      // @ts-ignore: intentionally testing for runtime errors
-      group.getValues("a").add(3);
-    }).toThrow();
-    expect(() => {
-      // @ts-ignore: intentionally testing for runtime errors
-      group.getValues("b").delete(2);
-    }).toThrow();
+  it("should return the size", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    map.add("b", 2);
+    map.delete("a");
+    expect(map.size).toBe(1);
+  });
+
+  it("should clear the map", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    map.add("b", 2);
+    map.clear();
+    expect(map.size).toBe(0);
+  });
+
+  it("should return the keys", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    map.add("b", 2);
+    expect(Array.from(map.keys())).toEqual(["a", "b"]);
+  });
+
+  it("should return the values", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    map.add("b", 2);
+    expect(Array.from(map.values())).toEqual([1, 2]);
+  });
+
+  it("should return the entries", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    map.add("b", 2);
+    expect(Array.from(map.entries())).toEqual([
+      ["a", 1],
+      ["b", 2],
+    ]);
+  });
+
+  it("should allow allow reverse lookup", () => {
+    const map = new BiMap<string, number>();
+    map.add("a", 1);
+    expect(map.get("a")).toBe(1);
+    expect(map.getKey(1)).toBe("a");
   });
 });
 

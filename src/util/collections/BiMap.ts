@@ -1,38 +1,28 @@
 import { SetView } from "./SetView.ts";
 
+/**
+ * A bi-directional map.
+ */
 export class BiMap<K, V> {
-  private readonly kvMap: Map<K, Set<V>>;
-  private readonly vkMap: Map<V, Set<K>>;
+  private readonly kvMap: Map<K, V>;
+  private readonly vkMap: Map<V, K>;
 
   constructor() {
     this.kvMap = new Map();
     this.vkMap = new Map();
   }
 
-  private static ensureSet<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {
-    const set = map.get(key);
-    if (set !== undefined) return set;
-
-    const newSet = new Set<V>();
-    map.set(key, newSet);
-
-    return newSet;
+  add(key: K, value: V): void {
+    this.kvMap.set(key, value);
+    this.vkMap.set(value, key);
   }
 
-  private static getSetView<K, V>(map: Map<K, Set<V>>, key: K): ReadonlySet<V> {
-    return new SetView(BiMap.ensureSet(map, key));
+  get(key: K): V | undefined {
+    return this.kvMap.get(key);
   }
 
-  add(key: K, value: V) {
-    BiMap.ensureSet(this.kvMap, key).add(value);
-    BiMap.ensureSet(this.vkMap, value).add(key);
-  }
-
-  remove(key: K, value: V): boolean {
-    return (
-      BiMap.ensureSet(this.kvMap, key).delete(value) &&
-      BiMap.ensureSet(this.vkMap, value).delete(key)
-    );
+  getKey(value: V): K | undefined {
+    return this.vkMap.get(value);
   }
 
   hasKey(key: K): boolean {
@@ -43,11 +33,42 @@ export class BiMap<K, V> {
     return this.vkMap.has(value);
   }
 
-  getKeys(value: V): ReadonlySet<K> {
-    return BiMap.getSetView(this.vkMap, value);
+  keys(): IterableIterator<K> {
+    return this.kvMap.keys();
   }
 
-  getValues(key: K): ReadonlySet<V> {
-    return BiMap.getSetView(this.kvMap, key);
+  values(): IterableIterator<V> {
+    return this.vkMap.keys();
+  }
+
+  entries(): IterableIterator<[K, V]> {
+    return this.kvMap.entries();
+  }
+
+  get size(): number {
+    return this.kvMap.size;
+  }
+
+  delete(key: K): boolean {
+    const value = this.kvMap.get(key);
+    if (value === undefined) {
+      return false;
+    }
+    this.kvMap.delete(key);
+    this.vkMap.delete(value);
+    return true;
+  }
+
+  clear(): void {
+    this.kvMap.clear();
+    this.vkMap.clear();
+  }
+
+  get [Symbol.toStringTag](): string {
+    return "BiMap";
+  }
+
+  [Symbol.iterator](): IterableIterator<[K, V]> {
+    return this.entries();
   }
 }
