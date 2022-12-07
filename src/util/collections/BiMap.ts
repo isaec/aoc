@@ -39,7 +39,7 @@ export class SetView<T> implements ReadonlySet<T> {
   }
 }
 
-export default class BiMap<K, V> {
+export class BiMap<K, V> {
   private readonly kvMap: Map<K, Set<V>>;
   private readonly vkMap: Map<V, Set<K>>;
 
