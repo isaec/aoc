@@ -38,5 +38,3 @@ export class SetView<T> implements ReadonlySet<T> {
     return this.set[Symbol.iterator]();
   }
 }
-
-export

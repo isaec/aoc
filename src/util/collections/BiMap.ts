@@ -1,3 +1,5 @@
+import { SetView } from "./SetView.ts";
+
 export class BiMap<K, V> {
   private readonly kvMap: Map<K, Set<V>>;
   private readonly vkMap: Map<V, Set<K>>;

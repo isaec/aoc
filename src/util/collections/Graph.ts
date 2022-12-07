@@ -25,6 +25,10 @@ export class Graph<T> {
     Graph.ensureSet(this.edges, from).add(to);
   }
 
+  removeEdge(from: T, to: T): boolean {
+    return Graph.ensureSet(this.edges, from).delete(to);
+  }
+
   getEdges(from: T): ReadonlySet<T> {
     return Graph.getSetView(this.edges, from);
   }
