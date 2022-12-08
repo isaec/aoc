@@ -79,6 +79,69 @@ describe("Graph", () => {
     expectContentEqual(graph.getNodesArray(), ["a", "c"]);
     expectContentEqual(graph.getAllEdgesArray(), [["c", "a"]]);
   });
+
+  it("should be able to remove edges", () => {
+    const graph = new Graph<Node>();
+    graph.addNode("a");
+    graph.addNode("b");
+    graph.addNode("c");
+    graph.addEdge("a", "b");
+    graph.addEdge("b", "c");
+    graph.addEdge("c", "a");
+    expectContentEqual(graph.getNodesArray(), ["a", "b", "c"]);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+    graph.removeEdge("a", "b");
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+  });
+
+  it("should be able to remove bi-directional edges", () => {
+    const graph = new Graph<Node>();
+    graph.addNode("a");
+    graph.addNode("b");
+    graph.addNode("c");
+    graph.addBiEdge("a", "b");
+    graph.addBiEdge("b", "c");
+    graph.addBiEdge("c", "a");
+    expectContentEqual(graph.getNodesArray(), ["a", "b", "c"]);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["a", "c"],
+      ["b", "a"],
+      ["b", "c"],
+      ["c", "a"],
+      ["c", "b"],
+    ]);
+    graph.removeBiEdge("a", "b");
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "c"],
+      ["b", "c"],
+      ["c", "a"],
+      ["c", "b"],
+    ]);
+    graph.removeEdge("a", "c");
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["b", "c"],
+      ["c", "a"],
+      ["c", "b"],
+    ]);
+  });
+
+  it("should be able to get the number of nodes", () => {
+    const graph = new Graph<Node>();
+    graph.addNode("a");
+    graph.addNode("b");
+    graph.addNode("c");
+    expect(graph.nodeCount).toBe(3);
+    graph.removeNode("b");
+    expect(graph.nodeCount).toBe(2);
+  });
 });
 
 run();

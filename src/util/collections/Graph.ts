@@ -12,6 +12,7 @@ type NodeAddress = number & { _nodeAddress: never };
 export class Graph<T> {
   private readonly nodeAddressMap: BiMap<T, NodeAddress>;
   private readonly addressEdgesMap: Map<NodeAddress, Set<NodeAddress>>;
+  private internalEdgeCount = 0;
   private nextNodeAddress: NodeAddress = 0 as NodeAddress;
 
   constructor() {
@@ -41,6 +42,7 @@ export class Graph<T> {
 
     const newSet = new Set<NodeAddress>();
     this.addressEdgesMap.set(node, newSet);
+    this.internalEdgeCount++;
     return newSet;
   }
 
@@ -66,6 +68,24 @@ export class Graph<T> {
   private boundGetElementForAddress = this.getElementForAddress.bind(this);
 
   /**
+   * passthrough for removing an edge from the edge set, and decrementing the edge count if the edge was removed
+   * @param removed whether the edge was removed
+   * @returns whether the edge was removed
+   */
+  private decrementEdgeCount(removed: boolean): boolean {
+    if (removed) this.internalEdgeCount--;
+    return removed;
+  }
+
+  get nodeCount() {
+    return this.nodeAddressMap.size;
+  }
+
+  get edgeCount() {
+    return this.internalEdgeCount;
+  }
+
+  /**
    * Add a node to the graph. If the node is already in the graph, nothing happens.
    * @runtime O(1)
    * @param node the node to add
@@ -79,7 +99,10 @@ export class Graph<T> {
   addEdge(fromNode: T, toNode: T): void {
     const fromNodeAddress = this.getOrMakeNodeAddress(fromNode);
     const toNodeAddress = this.getOrMakeNodeAddress(toNode);
-    this.getEdgeSet(fromNodeAddress).add(toNodeAddress);
+    const edgeSet = this.getEdgeSet(fromNodeAddress);
+    if (edgeSet.has(toNodeAddress)) return;
+    edgeSet.add(toNodeAddress);
+    this.internalEdgeCount++;
   }
 
   addEdges(fromNode: T, toNodes: Iterable<T>): void {
@@ -87,7 +110,9 @@ export class Graph<T> {
     const edgeSet = this.getEdgeSet(fromNodeAddress);
     for (const toNode of toNodes) {
       const toNodeAddress = this.getOrMakeNodeAddress(toNode);
+      if (edgeSet.has(toNodeAddress)) continue;
       edgeSet.add(toNodeAddress);
+      this.internalEdgeCount++;
     }
   }
 
@@ -173,7 +198,7 @@ export class Graph<T> {
     this.addressEdgesMap.delete(nodeAddress);
 
     for (const edges of this.addressEdgesMap.values()) {
-      edges.delete(nodeAddress);
+      this.decrementEdgeCount(edges.delete(nodeAddress));
     }
 
     return true;
@@ -189,7 +214,7 @@ export class Graph<T> {
     const edges = this.addressEdgesMap.get(fromNodeAddress);
     if (edges === undefined) return false;
 
-    return edges.delete(toNodeAddress);
+    return this.decrementEdgeCount(edges.delete(toNodeAddress));
   }
 
   removeBiEdge(node1: T, node2: T): boolean {
