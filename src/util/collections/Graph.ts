@@ -7,7 +7,7 @@ import { BiMap } from "./BiMap.ts";
 type NodeAddress = number & { _nodeAddress: never };
 
 /**
- * An unweighted undirected graph.
+ * An unweighted directed graph.
  */
 export class Graph<T> {
   private readonly nodeAddressMap: BiMap<T, NodeAddress>;
@@ -63,6 +63,8 @@ export class Graph<T> {
     return element;
   }
 
+  private boundGetElementForAddress = this.getElementForAddress.bind(this);
+
   /**
    * Add a node to the graph. If the node is already in the graph, nothing happens.
    * @param node the node to add
@@ -73,10 +75,24 @@ export class Graph<T> {
     this.nodeAddressMap.add(node, this.getNextNodeAddress());
   }
 
-  addEdge(node1: T, node2: T): void {
-    const internalNode1 = this.getOrMakeNodeAddress(node1);
-    const internalNode2 = this.getOrMakeNodeAddress(node2);
-    this.getEdgeSet(internalNode1).add(internalNode2);
+  addEdge(fromNode: T, toNode: T): void {
+    const fromNodeAddress = this.getOrMakeNodeAddress(fromNode);
+    const toNodeAddress = this.getOrMakeNodeAddress(toNode);
+    this.getEdgeSet(fromNodeAddress).add(toNodeAddress);
+  }
+
+  addEdges(fromNode: T, toNodes: Iterable<T>): void {
+    const fromNodeAddress = this.getOrMakeNodeAddress(fromNode);
+    const edgeSet = this.getEdgeSet(fromNodeAddress);
+    for (const toNode of toNodes) {
+      const toNodeAddress = this.getOrMakeNodeAddress(toNode);
+      edgeSet.add(toNodeAddress);
+    }
+  }
+
+  addBiEdge(node1: T, node2: T): void {
+    this.addEdge(node1, node2);
+    this.addEdge(node2, node1);
   }
 
   getNodes() {
@@ -95,10 +111,23 @@ export class Graph<T> {
     // this is marginally better than creating an empty set for a node that may never have edges
     if (edges === undefined) return [];
 
-    return mapIterable(edges, this.getElementForAddress);
+    return mapIterable(edges, this.boundGetElementForAddress);
   }
 
   getEdgesArray(node: T) {
     return Array.from(this.getEdges(node));
+  }
+
+  *getAllEdges(): Generator<[T, T]> {
+    for (const [node, edges] of this.addressEdgesMap) {
+      const nodeValue = this.getElementForAddress(node);
+      for (const edge of edges) {
+        yield [nodeValue, this.getElementForAddress(edge)];
+      }
+    }
+  }
+
+  getAllEdgesArray() {
+    return Array.from(this.getAllEdges());
   }
 }
