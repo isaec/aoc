@@ -42,7 +42,6 @@ export class Graph<T> {
 
     const newSet = new Set<NodeAddress>();
     this.addressEdgesMap.set(node, newSet);
-    this.internalEdgeCount++;
     return newSet;
   }
 

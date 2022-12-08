@@ -142,6 +142,21 @@ describe("Graph", () => {
     graph.removeNode("b");
     expect(graph.nodeCount).toBe(2);
   });
+
+  it("should be able to get the number of edges and nodes", () => {
+    const graph = new Graph<Node>();
+    graph.addNode("a");
+    expect(graph.nodeCount).toBe(1);
+    graph.addNode("b");
+    graph.addNode("c");
+    expect(graph.nodeCount).toBe(3);
+    graph.addEdge("a", "b");
+    graph.addEdge("b", "c");
+    graph.addEdge("c", "a");
+    expect(graph.edgeCount).toBe(3);
+    graph.removeEdge("a", "b");
+    expect(graph.edgeCount).toBe(2);
+  });
 });
 
 run();
