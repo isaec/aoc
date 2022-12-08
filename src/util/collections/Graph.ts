@@ -1,3 +1,4 @@
+import { mapIterable } from "../iterable.ts";
 import { BiMap } from "./BiMap.ts";
 
 /**
@@ -86,7 +87,7 @@ export class Graph<T> {
     return Array.from(this.nodeAddressMap.keys());
   }
 
-  getEdgesArray(node: T) {
+  getEdges(node: T) {
     const internalNode = this.nodeAddressMap.get(node);
     if (internalNode === undefined) return [];
 
@@ -94,6 +95,10 @@ export class Graph<T> {
     // this is marginally better than creating an empty set for a node that may never have edges
     if (edges === undefined) return [];
 
-    return Array.from(edges).map(this.getElementForAddress);
+    return mapIterable(edges, this.getElementForAddress);
+  }
+
+  getEdgesArray(node: T) {
+    return Array.from(this.getEdges(node));
   }
 }
