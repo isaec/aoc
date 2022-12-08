@@ -7,7 +7,9 @@ import { BiMap } from "./BiMap.ts";
 type NodeAddress = number & { _nodeAddress: never };
 
 /**
- * An unweighted directed graph, optimized for fast lookups and insertion.
+ * An unweighted directed graph, optimized for fast lookups and insertion. Nodes are mapped to a unique address in a {@link BiMap}, and edges are stored in a {@link Map} of node addresses to sets of node addresses.
+ *
+ * You can use any type as a node, but it should be unique as your node will be used as a key in a {@link Map}. Given this, modifying a node after it has been added to the graph may cause unexpected behavior.
  */
 export class Graph<T> {
   private readonly nodeAddressMap: BiMap<T, NodeAddress>;
@@ -95,15 +97,29 @@ export class Graph<T> {
     this.nodeAddressMap.add(node, this.getNextNodeAddress());
   }
 
-  addEdge(fromNode: T, toNode: T): void {
+  /**
+   * Add edges from a node to another node. If the edge already exists, nothing happens. If the nodes are not in the graph, they are added.
+   * @runtime O(1)
+   * @param fromNode the node the edge is coming from
+   * @param toNode the node the edge is going to
+   * @returns whether the edge was added
+   */
+  addEdge(fromNode: T, toNode: T): boolean {
     const fromNodeAddress = this.getOrMakeNodeAddress(fromNode);
     const toNodeAddress = this.getOrMakeNodeAddress(toNode);
     const edgeSet = this.getEdgeSet(fromNodeAddress);
-    if (edgeSet.has(toNodeAddress)) return;
+    if (edgeSet.has(toNodeAddress)) return false;
     edgeSet.add(toNodeAddress);
     this.internalEdgeCount++;
+    return true;
   }
 
+  /**
+   * Add edges from a node to multiple nodes. If the nodes are not in the graph, they are added. If any of the edges already exist, they are ignored.
+   * @runtime O(n)
+   * @param fromNode the node the edges are coming from
+   * @param toNodes the nodes the edges are going to
+   */
   addEdges(fromNode: T, toNodes: Iterable<T>): void {
     const fromNodeAddress = this.getOrMakeNodeAddress(fromNode);
     const edgeSet = this.getEdgeSet(fromNodeAddress);
@@ -115,19 +131,39 @@ export class Graph<T> {
     }
   }
 
+  /**
+   * Add an edge in both directions. If the nodes are not in the graph, they are added, and existing edges are skipped.
+   * @runtime O(1)
+   * @param node1 one node in the edge pair
+   * @param node2 another node in the edge pair
+   */
   addBiEdge(node1: T, node2: T): void {
     this.addEdge(node1, node2);
     this.addEdge(node2, node1);
   }
 
+  /**
+   * Gets all the nodes in the graph. Order is not guaranteed.
+   * @runtime O(1)
+   * @returns an iterable of all the nodes in the graph
+   */
   getNodes() {
     return this.nodeAddressMap.keys();
   }
 
+  /**
+   * @returns an array of all the nodes in the graph, by calling ``Array.from`` {@link getNodes}
+   */
   getNodesArray() {
     return Array.from(this.nodeAddressMap.keys());
   }
 
+  /**
+   * Gets the edges coming from a given node.
+   * @runtime O(1)
+   * @param node the node to get the edges for
+   * @returns the nodes that the given node is connected to by an edge
+   */
   getEdges(node: T) {
     const internalNode = this.nodeAddressMap.get(node);
     if (internalNode === undefined) return [];
@@ -139,10 +175,18 @@ export class Graph<T> {
     return mapIterable(edges, this.boundGetElementForAddress);
   }
 
+  /**
+   * @returns an array of all the edges in the graph, by calling ``Array.from`` {@link getAllEdges}
+   */
   getEdgesArray(node: T) {
     return Array.from(this.getEdges(node));
   }
 
+  /**
+   * Gets all the edges in the graph. Order is not guaranteed.
+   * @runtime O(|E|)
+   * @returns an iterable of all the edges in the graph
+   */
   *getAllEdges(): Generator<[T, T]> {
     for (const [node, edges] of this.addressEdgesMap) {
       const nodeValue = this.getElementForAddress(node);
@@ -152,14 +196,30 @@ export class Graph<T> {
     }
   }
 
+  /**
+   * @returns an array of all the edges in the graph, by calling ``Array.from`` {@link getAllEdges}
+   */
   getAllEdgesArray() {
     return Array.from(this.getAllEdges());
   }
 
+  /**
+   * Checks if a node is in the graph.
+   * @runtime O(1)
+   * @param node the node to check
+   * @returns whether the node is in the graph
+   */
   hasNode(node: T) {
     return this.nodeAddressMap.hasKey(node);
   }
 
+  /**
+   * Checks if an edge is in the graph.
+   * @runtime O(1)
+   * @param fromNode the node the edge is coming from
+   * @param toNode the node the edge is going to
+   * @returns whether the edge exists
+   */
   hasEdge(fromNode: T, toNode: T) {
     const fromNodeAddress = this.nodeAddressMap.get(fromNode);
     if (fromNodeAddress === undefined) return false;
@@ -173,6 +233,13 @@ export class Graph<T> {
     return edges.has(toNodeAddress);
   }
 
+  /**
+   * Checks if an edge is in the graph in both directions.
+   * @runtime O(1)
+   * @param node1 one node in the edge pair
+   * @param node2 another node in the edge pair
+   * @returns whether the edge exists
+   */
   hasBiEdge(node1: T, node2: T) {
     const node1Address = this.nodeAddressMap.get(node1);
     if (node1Address === undefined) return false;
@@ -189,6 +256,12 @@ export class Graph<T> {
     return edges1.has(node2Address) && edges2.has(node1Address);
   }
 
+  /**
+   * Removes a node from the graph.
+   * @runtime O(|E|)
+   * @param node the node to remove
+   * @returns whether the node was removed
+   */
   removeNode(node: T): boolean {
     const nodeAddress = this.nodeAddressMap.get(node);
     if (nodeAddress === undefined) return false;
@@ -207,11 +280,17 @@ export class Graph<T> {
 
     // remove the node itself
     this.nodeAddressMap.delete(node);
-    this.addressEdgesMap.delete(nodeAddress);
 
     return true;
   }
 
+  /**
+   * Removes an edge from the graph.
+   * @runtime O(1)
+   * @param fromNode the node the edge is coming from
+   * @param toNode the node the edge is going to
+   * @returns whether the edge was removed
+   */
   removeEdge(fromNode: T, toNode: T): boolean {
     const fromNodeAddress = this.nodeAddressMap.get(fromNode);
     if (fromNodeAddress === undefined) return false;
@@ -225,6 +304,13 @@ export class Graph<T> {
     return this.decrementEdgeCount(edges.delete(toNodeAddress));
   }
 
+  /**
+   * Removes an edge from the graph in both directions, by calling {@link removeEdge} twice.
+   * @runtime O(1)
+   * @param node1 a node in the edge pair
+   * @param node2 another node in the edge pair
+   * @returns whether the edge was removed
+   */
   removeBiEdge(node1: T, node2: T): boolean {
     return this.removeEdge(node1, node2) && this.removeEdge(node2, node1);
   }

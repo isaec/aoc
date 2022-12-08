@@ -158,6 +158,64 @@ describe("Graph", () => {
     expect(graph.edgeCount).toBe(2);
   });
 
+  it("shouldn't be able to add duplicate edges", () => {
+    const graph = new Graph<Node>();
+    graph.addNode("a");
+    graph.addNode("b");
+    graph.addNode("c");
+    graph.addEdge("a", "b");
+    expect(graph.hasEdge("a", "b")).toBe(true);
+    graph.addEdge("b", "c");
+    graph.addEdge("c", "a");
+    expect(graph.edgeCount).toBe(3);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+    graph.addEdge("a", "b");
+    expect(graph.edgeCount).toBe(3);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+    graph.addEdge("b", "c");
+    expect(graph.edgeCount).toBe(3);
+    graph.addEdge("c", "a");
+    expect(graph.edgeCount).toBe(3);
+
+    graph.removeEdge("a", "b");
+    expect(graph.edgeCount).toBe(2);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+
+    graph.addEdge("a", "b");
+    expect(graph.edgeCount).toBe(3);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["b", "c"],
+      ["c", "a"],
+    ]);
+
+    graph.removeNode("a");
+    expect(graph.nodeCount).toBe(2);
+    expect(graph.edgeCount).toBe(1);
+    expectContentEqual(graph.getAllEdgesArray(), [["b", "c"]]);
+    expect(graph.hasEdge("a", "b")).toBe(false);
+
+    graph.addEdge("a", "b");
+    expect(graph.edgeCount).toBe(2);
+    expect(graph.nodeCount).toBe(3);
+    expect(graph.hasEdge("a", "b")).toBe(true);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      ["a", "b"],
+      ["b", "c"],
+    ]);
+  });
+
   it("should be able to pass basic counting stress test", () => {
     const graph = new Graph<number>();
     const nodeCount = 1000;
@@ -175,6 +233,47 @@ describe("Graph", () => {
     }
     expect(graph.nodeCount).toBe(100);
     expect(graph.edgeCount).toBe(99);
+
+    // double remove some nodes!
+    for (let i = 0; i < nodeCount; i++) {
+      graph.removeNode(i);
+    }
+    expect(graph.nodeCount).toBe(0);
+    expect(graph.edgeCount).toBe(0);
+  });
+
+  it("should support exotic node types", () => {
+    const alpha = { a: 1, b: "a" };
+    const beta = { a: 2, b: "b" };
+    const gamma = { a: 3, b: "c" };
+    type GreekNode = typeof alpha | typeof beta | typeof gamma;
+    const graph = new Graph<GreekNode>();
+    graph.addNode(alpha);
+    graph.addNode(beta);
+    graph.addNode(gamma);
+    expect(graph.nodeCount).toBe(3);
+    graph.addNode(alpha);
+    expect(graph.nodeCount).toBe(3);
+    graph.addEdge(alpha, beta);
+    expect(graph.edgeCount).toBe(1);
+    expect(graph.hasEdge(alpha, beta)).toBe(true);
+    expect(graph.hasEdge(beta, alpha)).toBe(false);
+    graph.addEdge(beta, gamma);
+    graph.addEdge(gamma, alpha);
+    expect(graph.edgeCount).toBe(3);
+    expect(graph.hasEdge(alpha, beta)).toBe(true);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      [alpha, beta],
+      [beta, gamma],
+      [gamma, alpha],
+    ]);
+    graph.removeEdge(alpha, beta);
+    expect(graph.edgeCount).toBe(2);
+    expect(graph.hasEdge(alpha, beta)).toBe(false);
+    expectContentEqual(graph.getAllEdgesArray(), [
+      [beta, gamma],
+      [gamma, alpha],
+    ]);
   });
 });
 
