@@ -193,12 +193,21 @@ export class Graph<T> {
     const nodeAddress = this.nodeAddressMap.get(node);
     if (nodeAddress === undefined) return false;
 
-    this.nodeAddressMap.delete(node);
-    this.addressEdgesMap.delete(nodeAddress);
-
+    // remove all edges to the node
     for (const edges of this.addressEdgesMap.values()) {
       this.decrementEdgeCount(edges.delete(nodeAddress));
     }
+
+    // remove all edges from the node
+    const edges = this.addressEdgesMap.get(nodeAddress);
+    if (edges !== undefined) {
+      this.internalEdgeCount -= edges.size;
+      this.addressEdgesMap.delete(nodeAddress);
+    }
+
+    // remove the node itself
+    this.nodeAddressMap.delete(node);
+    this.addressEdgesMap.delete(nodeAddress);
 
     return true;
   }

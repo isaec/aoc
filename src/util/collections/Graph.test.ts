@@ -157,6 +157,25 @@ describe("Graph", () => {
     graph.removeEdge("a", "b");
     expect(graph.edgeCount).toBe(2);
   });
+
+  it("should be able to pass basic counting stress test", () => {
+    const graph = new Graph<number>();
+    const nodeCount = 1000;
+    for (let i = 0; i < nodeCount; i++) {
+      graph.addNode(i);
+    }
+    expect(graph.nodeCount).toBe(nodeCount);
+    for (let i = 0; i < nodeCount - 1; i++) {
+      graph.addEdge(i, i + 1);
+    }
+    expect(graph.nodeCount).toBe(nodeCount);
+    expect(graph.edgeCount).toBe(nodeCount - 1);
+    for (let i = 0; i < nodeCount - 100; i++) {
+      graph.removeNode(i);
+    }
+    expect(graph.nodeCount).toBe(100);
+    expect(graph.edgeCount).toBe(99);
+  });
 });
 
 run();
