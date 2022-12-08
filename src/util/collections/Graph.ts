@@ -7,7 +7,7 @@ import { BiMap } from "./BiMap.ts";
 type NodeAddress = number & { _nodeAddress: never };
 
 /**
- * An unweighted directed graph.
+ * An unweighted directed graph, optimized for fast lookups and insertion.
  */
 export class Graph<T> {
   private readonly nodeAddressMap: BiMap<T, NodeAddress>;
@@ -67,6 +67,7 @@ export class Graph<T> {
 
   /**
    * Add a node to the graph. If the node is already in the graph, nothing happens.
+   * @runtime O(1)
    * @param node the node to add
    */
   addNode(node: T): void {
@@ -129,5 +130,69 @@ export class Graph<T> {
 
   getAllEdgesArray() {
     return Array.from(this.getAllEdges());
+  }
+
+  hasNode(node: T) {
+    return this.nodeAddressMap.hasKey(node);
+  }
+
+  hasEdge(fromNode: T, toNode: T) {
+    const fromNodeAddress = this.nodeAddressMap.get(fromNode);
+    if (fromNodeAddress === undefined) return false;
+
+    const toNodeAddress = this.nodeAddressMap.get(toNode);
+    if (toNodeAddress === undefined) return false;
+
+    const edges = this.addressEdgesMap.get(fromNodeAddress);
+    if (edges === undefined) return false;
+
+    return edges.has(toNodeAddress);
+  }
+
+  hasBiEdge(node1: T, node2: T) {
+    const node1Address = this.nodeAddressMap.get(node1);
+    if (node1Address === undefined) return false;
+
+    const node2Address = this.nodeAddressMap.get(node2);
+    if (node2Address === undefined) return false;
+
+    const edges1 = this.addressEdgesMap.get(node1Address);
+    if (edges1 === undefined) return false;
+
+    const edges2 = this.addressEdgesMap.get(node2Address);
+    if (edges2 === undefined) return false;
+
+    return edges1.has(node2Address) && edges2.has(node1Address);
+  }
+
+  removeNode(node: T): boolean {
+    const nodeAddress = this.nodeAddressMap.get(node);
+    if (nodeAddress === undefined) return false;
+
+    this.nodeAddressMap.delete(node);
+    this.addressEdgesMap.delete(nodeAddress);
+
+    for (const edges of this.addressEdgesMap.values()) {
+      edges.delete(nodeAddress);
+    }
+
+    return true;
+  }
+
+  removeEdge(fromNode: T, toNode: T): boolean {
+    const fromNodeAddress = this.nodeAddressMap.get(fromNode);
+    if (fromNodeAddress === undefined) return false;
+
+    const toNodeAddress = this.nodeAddressMap.get(toNode);
+    if (toNodeAddress === undefined) return false;
+
+    const edges = this.addressEdgesMap.get(fromNodeAddress);
+    if (edges === undefined) return false;
+
+    return edges.delete(toNodeAddress);
+  }
+
+  removeBiEdge(node1: T, node2: T): boolean {
+    return this.removeEdge(node1, node2) && this.removeEdge(node2, node1);
   }
 }
