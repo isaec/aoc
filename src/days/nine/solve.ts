@@ -231,78 +231,32 @@ await ex.part2(async ({ text, lines }, console, tick) => {
     setNodePos(0, [x, y]);
   };
 
-  const updateNode = (
-    dir: "R" | "U" | "L" | "D",
-    node: number
-  ): "R" | "U" | "L" | "D" => {
+  const updateNode = (node: number) => {
     if (node >= nodes.length || node < 1) throw new Error("node out of bounds");
     const headPos = nodes[node - 1];
     const [x, y] = headPos;
-    let tailPos = nodes[node];
+    const tailPos = nodes[node];
     const [tx, ty] = tailPos;
 
-    if (distance(headPos, tailPos) >= 2) {
-      // we need to move the tail and align it on an axis with the head
-      let [tx, ty] = tailPos;
-      // console.log({ tx, ty, x, y, dir });
-      // we need to align with the axis we didn't move on
-      if (dir === "R" || dir === "L") {
-        if (y != ty) {
-          // align y
-          if (y > ty) {
-            ty += 1;
-          } else {
-            ty -= 1;
-          }
-        }
-      } else {
-        if (x != tx) {
-          // align x
-          if (x > tx) {
-            tx += 1;
-          } else {
-            tx -= 1;
-          }
-        }
-      }
-      // console.log({ tx, ty });
-      tailPos = [tx, ty];
-    }
-    if (distance(headPos, tailPos) > 1.5) {
+    // we want to move the tail to be 1 square away from the head
+    // if the head is 1 square away from the tail, we're done
+    while (distance(headPos, tailPos) > 1.5) {
       // move tail
-      let [tx, ty] = tailPos;
-      switch (dir) {
-        case "R":
-          tx += 1;
-          break;
-        case "U":
-          ty += 1;
-          break;
-        case "L":
-          tx -= 1;
-          break;
-        case "D":
-          ty -= 1;
-          break;
+      if (tx > x) {
+        tailPos[0] -= 1;
       }
-      tailPos = [tx, ty];
-    }
-
-    // determine the direction the tail was moved
-    let newDir = dir;
-    if (tailPos[0] > tx) {
-      newDir = "R";
-    } else if (tailPos[0] < tx) {
-      newDir = "L";
-    } else if (tailPos[1] > ty) {
-      newDir = "U";
-    } else if (tailPos[1] < ty) {
-      newDir = "D";
+      if (tx < x) {
+        tailPos[0] += 1;
+      }
+      if (ty > y) {
+        tailPos[1] -= 1;
+      }
+      if (ty < y) {
+        tailPos[1] += 1;
+      }
     }
 
     setNodePos(node, tailPos);
-
-    return newDir;
   };
 
   printBoard();
@@ -313,10 +267,8 @@ await ex.part2(async ({ text, lines }, console, tick) => {
     for (let i = 0; i < dist; i++) {
       updateHead(dir);
 
-      let lastMove = dir;
-
       for (let node = 1; node < nodes.length; node++) {
-        lastMove = updateNode(lastMove, node);
+        updateNode(node);
       }
 
       visited.add(posToCord(nodes[nodes.length - 1]));
