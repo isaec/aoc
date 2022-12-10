@@ -292,6 +292,7 @@ await ex.part2(async ({ text, lines }, console, tick) => {
       cycle++;
       return;
     }
+
     if (instruction === undefined) throw new Error("instruction is undefined");
     if (instruction === "") throw new Error("instruction is empty");
     if (instruction === "noop") {
@@ -329,25 +330,34 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
     if (drawnCycles.has(cycle)) return;
 
-    console.log({
-      xRegValue,
-      cycle,
-    });
+    // console.log({
+    //   xRegValue,
+    //   cycle,
+    // });
 
-    if (cycle - 1 <= xRegValue && cycle + 1 >= xRegValue) {
-      displayLine.push("#");
+    if ((cycle % 40) - 1 <= xRegValue && (cycle % 40) + 1 >= xRegValue) {
+      displayLine.push("█");
     } else {
-      displayLine.push(".");
+      displayLine.push(" ");
     }
 
-    console.log(displayLine.join(""));
+    // console.log(displayLine.join(""));
 
     drawnCycles.add(cycle);
   };
 
   const instructions = text.split("\n");
 
-  const cycles = new Set([20, 60, 100, 140, 180, 220]);
+  const cycles = new Set([40, 80, 120, 160, 200, 240]);
+
+  const flushedSet = new Set<number>();
+  let flushedStr = "\n";
+  const flushDisplay = () => {
+    if (flushedSet.has(cycle)) return;
+    flushedStr += displayLine.join("") + "\n";
+    displayLine = [];
+    flushedSet.add(cycle);
+  };
 
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i];
@@ -363,11 +373,6 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
     // console.log("starting cycle", { xRegValue, cycle, instruction });
 
-    const flushDisplay = () => {
-      window.console.log(displayLine.join(""));
-      displayLine = [];
-    };
-
     while (remainingInstructionSteps >= 0) {
       // console.log("cycling", {
       //   xRegValue,
@@ -376,17 +381,19 @@ await ex.part2(async ({ text, lines }, console, tick) => {
       //   instruction,
       // });
       tick();
-      doInstruction(instruction);
       writeDisplay();
+      doInstruction(instruction);
 
       // console.log("inter x value", xRegValue, "cycle", cycle);
       if (cycles.has(cycle)) {
         flushDisplay();
       }
+
+      writeDisplay();
     }
     // console.log({ xRegValue, cycle, instruction });
   }
-  return true;
+  return flushedStr;
 });
 
 await ex.testPart2(
