@@ -75,7 +75,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     //   instruction,
     // });
 
-    console.log("starting cycle", { xRegValue, cycle, instruction });
+    // console.log("starting cycle", { xRegValue, cycle, instruction });
 
     while (remainingInstructionSteps >= 0) {
       // console.log("cycling", {
@@ -90,22 +90,22 @@ await ex.part1(async ({ text, lines }, console, tick) => {
       if (cycles.has(cycle) && !trippedCycles.has(cycle)) {
         signalCycleSum += xRegValue * cycle;
         trippedCycles.add(cycle);
-        console.log(
-          "tripped cycle",
-          cycle,
-          "xRegValue",
-          xRegValue,
-          "signal strength",
-          xRegValue * cycle,
+        // console.log(
+        //   "tripped cycle",
+        //   cycle,
+        //   "xRegValue",
+        //   xRegValue,
+        //   "signal strength",
+        //   xRegValue * cycle,
 
-          "\n"
-        );
+        //   "\n"
+        // );
       }
     }
-    console.log({ xRegValue, cycle, instruction });
+    // console.log({ xRegValue, cycle, instruction });
   }
 
-  console.log(trippedCycles);
+  // console.log(trippedCycles);
 
   return signalCycleSum;
 });
@@ -277,123 +277,31 @@ input
 await ex.part2(async ({ text, lines }, console, tick) => {
   // goal: Render the image given by your program. What eight capital letters appear on your CRT?
 
-  let xRegValue = 1;
-  let cycle = 0;
-  let displayLine: string[] = [];
+  const instructions = lines
+    .map((line) => line.split(" "))
+    .map(([cmd, arg]): [string, number] => [cmd, Number(arg)]);
 
-  const drawnCycles = new Set();
+  const xRegValues = [1];
 
-  let remainingInstructionSteps = 0;
-
-  const doInstruction = (instruction: string) => {
-    if (remainingInstructionSteps > 0) {
-      // console.log("waiting cycle");
-      remainingInstructionSteps--;
-      cycle++;
-      return;
+  for (const instruction of instructions) {
+    xRegValues.push(xRegValues.at(-1)!);
+    if (instruction[0] === "addx") {
+      xRegValues.push(xRegValues.at(-1)! + instruction[1]);
     }
-
-    if (instruction === undefined) throw new Error("instruction is undefined");
-    if (instruction === "") throw new Error("instruction is empty");
-    if (instruction === "noop") {
-      remainingInstructionSteps--;
-      // cycle++;
-      return;
-    }
-    if (instruction.startsWith("addx")) {
-      remainingInstructionSteps--;
-      const value = parseInt(instruction.split(" ")[1]);
-      // console.log("adding value", value);
-      xRegValue += value;
-      // cycle++;
-      return;
-    }
-  };
-
-  const readInstruction = (instruction: string) => {
-    if (instruction === undefined) throw new Error("instruction is undefined");
-    if (instruction === "") throw new Error("instruction is empty");
-
-    if (instruction === "noop") {
-      remainingInstructionSteps = 1;
-      return;
-    }
-    if (instruction.startsWith("addx ")) {
-      remainingInstructionSteps = 2;
-      return;
-    }
-  };
-
-  const writeDisplay = () => {
-    /* Specifically, the sprite is 3 pixels wide, and the X register sets the horizontal position of the middle of that sprite. (In this system, there is no such thing as "vertical position": if the sprite's horizontal position puts its pixels where the CRT is currently drawing, then those pixels will be drawn.) */
-    // If the sprite is positioned such that one of its three pixels is the pixel currently being drawn, the screen produces a lit pixel (#); otherwise, the screen leaves the pixel dark (.).
-
-    if (drawnCycles.has(cycle)) return;
-
-    // console.log({
-    //   xRegValue,
-    //   cycle,
-    // });
-
-    if ((cycle % 40) - 1 <= xRegValue && (cycle % 40) + 1 >= xRegValue) {
-      displayLine.push("█");
-    } else {
-      displayLine.push(" ");
-    }
-
-    // console.log(displayLine.join(""));
-
-    drawnCycles.add(cycle);
-  };
-
-  const instructions = text.split("\n");
-
-  const cycles = new Set([40, 80, 120, 160, 200, 240]);
-
-  const flushedSet = new Set<number>();
-  let flushedStr = "\n";
-  const flushDisplay = () => {
-    if (flushedSet.has(cycle)) return;
-    flushedStr += displayLine.join("") + "\n";
-    displayLine = [];
-    flushedSet.add(cycle);
-  };
-
-  for (let i = 0; i < instructions.length; i++) {
-    const instruction = instructions[i];
-    // console.log("instruction", i, instruction);
-    readInstruction(instruction);
-
-    // console.log({
-    //   xRegValue,
-    //   cycle,
-    //   remainingInstructionSteps,
-    //   instruction,
-    // });
-
-    // console.log("starting cycle", { xRegValue, cycle, instruction });
-
-    while (remainingInstructionSteps >= 0) {
-      // console.log("cycling", {
-      //   xRegValue,
-      //   cycle,
-      //   remainingInstructionSteps,
-      //   instruction,
-      // });
-      tick();
-      writeDisplay();
-      doInstruction(instruction);
-
-      // console.log("inter x value", xRegValue, "cycle", cycle);
-      if (cycles.has(cycle)) {
-        flushDisplay();
-      }
-
-      writeDisplay();
-    }
-    // console.log({ xRegValue, cycle, instruction });
   }
-  return flushedStr;
+
+  let display = "\n";
+
+  for (const [i, xRegValue] of xRegValues.entries()) {
+    if (xRegValue <= (i % 40) + 1 && xRegValue >= (i % 40) - 1) {
+      display += "█";
+    } else {
+      display += " ";
+    }
+    if (i % 40 === 39) display += "\n";
+  }
+
+  return display;
 });
 
 await ex.testPart2(
