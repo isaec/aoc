@@ -281,10 +281,13 @@ await ex.part2(async ({ text, lines }, console, tick) => {
     .map((line) => line.split(" "))
     .map(([cmd, arg]): [string, number] => [cmd, Number(arg)]);
 
+  // start with one for the first cycle
   const xRegValues = [1];
 
   for (const instruction of instructions) {
+    // keep the last value, noop and addx maintain the last value for one cycle
     xRegValues.push(xRegValues.at(-1)!);
+    // addx adds its value to the last value
     if (instruction[0] === "addx") {
       xRegValues.push(xRegValues.at(-1)! + instruction[1]);
     }
@@ -293,11 +296,13 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   let display = "\n";
 
   for (const [i, xRegValue] of xRegValues.entries()) {
+    // if the 3 pixel sprite is over the current xRegValue, draw the pixel
     if (xRegValue <= (i % 40) + 1 && xRegValue >= (i % 40) - 1) {
       display += "█";
     } else {
       display += " ";
     }
+    // do a new line!
     if (i % 40 === 39) display += "\n";
   }
 
