@@ -37,7 +37,7 @@ type Monkey = {
   id: number;
   items: bigint[];
   operation: (old: bigint) => bigint;
-  test: (worryLevel: bigint) => boolean;
+  divisor: bigint;
   ifTrueTarget: number;
   ifFalseTarget: number;
 };
@@ -65,12 +65,12 @@ const operationParser = (operation: string): ((old: bigint) => bigint) => {
   }
 };
 
-const testParser = (test: string): ((worryLevel: bigint) => boolean) => {
+const divisorParser = (test: string): bigint => {
   // always divisible by, so we can just check if the number is divisible by the number
   const words = test.split(" ");
   const numValue = BigInt(words[2]);
   // console.log({ test, numValue });
-  return (worryLevel: bigint) => worryLevel % numValue === 0n;
+  return numValue;
 };
 
 const monkeyParser = (input: string): Monkey => {
@@ -86,7 +86,7 @@ const monkeyParser = (input: string): Monkey => {
     id,
     items,
     operation: operationParser(operation),
-    test: testParser(test),
+    divisor: divisorParser(test),
     ifTrueTarget,
     ifFalseTarget,
   };
@@ -136,7 +136,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
           `\tItem ${itemWorryLevel} becomes ${postOpItem} and then ${newItem}`
         );
 
-        if (monkey.test(newItem)) {
+        if (newItem % monkey.divisor === 0n) {
           console.log(
             `\t\tItem ${newItem} is true, throwing to monkey ${monkey.ifTrueTarget}`
           );
@@ -196,7 +196,7 @@ input
 ]);
 
 // deno-lint-ignore no-unused-vars
-await ex.part2(async ({ text, lines }, console, tick) => {
+await ex.part2(async ({ text, lines }, _console, tick) => {
   const monkeyStrings = text.split("\n\n");
   const monkeys = monkeyStrings.map(monkeyParser);
 
@@ -204,38 +204,30 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
   const monkeyInspections = monkeys.map(() => 0);
 
+  const simplificationFactor = monkeys.reduce(
+    (acc, monkey) => acc * monkey.divisor,
+    1n
+  );
+
   for (let r = 1; r <= totalRounds; r++) {
-    for (const monkey of monkeys) {
+    for (let i = 0; i < monkeys.length; i++) {
+      const monkey = monkeys[i];
       // monkey inspect all of its items, one at a time
-      console.log(`Monkey ${monkey.id}:`);
-      for (
-        let i = 0;
-        i < monkey.items.length;
-        i++, monkeyInspections[monkey.id]++
-      ) {
-        const itemWorryLevel = monkey.items[i];
-        if (itemWorryLevel === undefined) throw new Error("No item to inspect");
+      monkeyInspections[monkey.id] += monkey.items.length;
+      for (let i = 0; i < monkey.items.length; i++) {
+        const itemWorryLevel = monkey.items[i]!;
 
-        const newItem = monkey.operation(itemWorryLevel);
+        const newItem = monkey.operation(itemWorryLevel) % simplificationFactor;
 
-        console.log(`\tItem ${itemWorryLevel} becomes ${newItem}`);
-
-        if (monkey.test(newItem)) {
-          console.log(
-            `\t\tItem ${newItem} is true, throwing to monkey ${monkey.ifTrueTarget}`
-          );
+        if (newItem % monkey.divisor === 0n) {
           monkeys[monkey.ifTrueTarget].items.push(newItem);
         } else {
-          console.log(
-            `\t\tItem ${newItem} is false, throwing to monkey ${monkey.ifFalseTarget}`
-          );
           monkeys[monkey.ifFalseTarget].items.push(newItem);
         }
       }
       monkey.items = [];
-      console.log(`Monkey ${monkey.id} has no more items to inspect\n`);
     }
-    window.console.log(`Round ${r} complete`);
+    console.log(`Round ${r} complete`);
   }
   console.log(monkeyInspections);
 
