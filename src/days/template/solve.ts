@@ -15,11 +15,11 @@ await ex.part1(async ({ text, lines }, console, tick) => {
 await ex.testPart1([
   ex.c`
 input
-`(),
+`()(false),
 
   ex.c`
 input
-`(),
+`()(false),
 ]);
 
 // deno-lint-ignore no-unused-vars
@@ -30,9 +30,9 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 await ex.testPart2([
   ex.c`
 input
-`(),
+`()(false),
 
   ex.c`
 input
-`(),
+`()(false),
 ]);
