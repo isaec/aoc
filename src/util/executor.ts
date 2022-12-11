@@ -18,13 +18,46 @@ type TestConsole = Readonly<{
   log: typeof console.log;
 }>;
 
-type TestCaseData = [string, string | number | undefined];
-type LabeledTestCase = [string, TestCaseData];
+type TestCaseData = [string, string | number | undefined] | false;
+type NonSkipTestData = Exclude<TestCaseData, false>;
+type LabeledTestCase = [string, NonSkipTestData];
+type ToggleTestCase = (run: boolean) => TestCaseData | LabeledTestCase;
+
+const extractTestCase = (
+  testCase: TestCaseData | LabeledTestCase | ToggleTestCase
+): TestCaseData | LabeledTestCase =>
+  typeof testCase === "function" ? testCase(true) : testCase;
 
 const isLabeledTestCase = (
-  testCase: TestCaseData | LabeledTestCase
+  testCase: TestCaseData | LabeledTestCase | ToggleTestCase
 ): testCase is LabeledTestCase => {
-  return testCase.length === 2 && Array.isArray(testCase[1]);
+  return (
+    Array.isArray(testCase) &&
+    testCase.length === 2 &&
+    Array.isArray(testCase[1])
+  );
+};
+
+const extractLabeledTestCase = (
+  testInput: TestCaseData | LabeledTestCase | ToggleTestCase,
+  iteration: number
+): LabeledTestCase | false => {
+  const testCase = extractTestCase(testInput);
+  if (testCase === false) return false;
+  const [testLabel, [input, expected]] = (
+    !isLabeledTestCase(testCase)
+      ? [`example ${iteration + 1}`, testCase]
+      : testCase
+  ) as LabeledTestCase;
+
+  if (
+    (testLabel === "description" || !isLabeledTestCase(testInput)) &&
+    input === "input" &&
+    (expected === "expected" || expected === undefined)
+  )
+    return false;
+
+  return [testLabel, [input, expected]];
 };
 
 const readInput = async (rel: string): Promise<Input> => {
@@ -179,7 +212,11 @@ export default class Executor {
     /** existing label */
     label: string,
     /** test data with results */
-    tests: Array<[string, TestCaseData] | TestCaseData>
+    tests: Array<
+      | LabeledTestCase
+      | TestCaseData
+      | ((run?: boolean) => LabeledTestCase | TestCaseData)
+    >
   ) {
     const fn = this.functionMap.get(label);
     if (!fn) throw new Error(`no function found for label ${label}`);
@@ -192,16 +229,12 @@ export default class Executor {
     };
 
     let failed = 0;
-    for (const [i, test] of tests.entries()) {
-      const [testLabel, [input, expected]]: LabeledTestCase =
-        !isLabeledTestCase(test) ? [`example ${i + 1}`, test] : test;
-
-      if (
-        (testLabel === "description" || !isLabeledTestCase(test)) &&
-        input === "input" &&
-        (expected === "expected" || expected === undefined)
-      )
-        continue;
+    for (const [i, testInput] of tests.entries()) {
+      const test = extractTestCase(testInput);
+      if (test === false) continue;
+      const labeledTestCase = extractLabeledTestCase(testInput, i);
+      if (labeledTestCase === false) continue;
+      const [testLabel, [input, expected]] = labeledTestCase;
 
       const expandedInput =
         input === "input.txt" ? (await this.input).text : input;
@@ -279,11 +312,13 @@ export default class Executor {
   public c(
     strings: readonly string[],
     ...values: unknown[]
-  ): (expected?: TestCaseData[1]) => TestCaseData {
+  ): (expected?: NonSkipTestData[1]) => (run?: boolean) => TestCaseData {
     const inputString = String.raw({ raw: strings }, ...values)
       .replace(/^\s*\n/, "")
       .replace(/\n\s*$/, "");
-    return (expected) => [inputString, expected];
+    return (expected) =>
+      (run = true) =>
+        run === true ? [inputString, expected] : false;
   }
 
   public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
