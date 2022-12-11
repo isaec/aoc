@@ -275,6 +275,223 @@ describe("Graph", () => {
       [gamma, alpha],
     ]);
   });
+
+  describe("depth-first traversal", () => {
+    it("should be able to iterate depth-first singly linked set of nodes", () => {
+      const graph = new Graph<Node>();
+      graph.addNode("a");
+      graph.addNode("b");
+      graph.addNode("c");
+      graph.addNode("d");
+      graph.addNode("e");
+      graph.addNode("f");
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      expect(graph.nodeCount).toBe(6);
+      expect(graph.edgeCount).toBe(5);
+      const visited: Node[] = [];
+      for (const node of graph.depthFirst("a")) {
+        visited.push(node);
+      }
+      expect(visited).toEqual(["a", "b", "c", "d", "e", "f"]);
+    });
+
+    it("should be able to iterate depth-first singly linked set of nodes with a cycle", () => {
+      const graph = new Graph<Node>();
+      graph.addNode("a");
+      graph.addNode("b");
+      graph.addNode("c");
+      graph.addNode("d");
+      graph.addNode("e");
+      graph.addNode("f");
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      graph.addEdge("f", "a");
+      expect(graph.nodeCount).toBe(6);
+      expect(graph.edgeCount).toBe(6);
+      const visited: Node[] = [];
+      for (const node of graph.depthFirst("a")) {
+        visited.push(node);
+      }
+      expect(visited).toEqual(["a", "b", "c", "d", "e", "f"]);
+    });
+
+    it("should be able to iterate depth-first singly linked set of nodes with a branch", () => {
+      type SplitNodes =
+        | "a"
+        | "b"
+        | "c"
+        | "d"
+        | "e1"
+        | "e2"
+        | "f1"
+        | "f2"
+        | "g1"
+        | "g2";
+      const graph = new Graph<SplitNodes>();
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdges("d", ["e1", "e2"]);
+      graph.addEdge("e1", "f1");
+      graph.addEdge("e2", "f2");
+      graph.addEdge("f1", "g1");
+      graph.addEdge("f2", "g2");
+
+      expect(graph.nodeCount).toBe(10);
+      expect(graph.edgeCount).toBe(9);
+
+      const visited: SplitNodes[] = [];
+      for (const node of graph.depthFirst("a")) {
+        visited.push(node);
+      }
+      expect(visited.slice(0, 4)).toEqual(["a", "b", "c", "d"]);
+
+      if (visited[4] === "e1") {
+        expect(visited.slice(4)).toEqual(["e1", "f1", "g1", "e2", "f2", "g2"]);
+      } else {
+        expect(visited.slice(4)).toEqual(["e2", "f2", "g2", "e1", "f1", "g1"]);
+      }
+    });
+
+    it("should be able to iterate depth-first singly linked set of nodes with a branch regardless of insertion order ", () => {
+      type SplitNodes =
+        | "a"
+        | "b"
+        | "c"
+        | "d"
+        | "e1"
+        | "e2"
+        | "f1"
+        | "f2"
+        | "g1"
+        | "g2";
+      const edgesToInsert: readonly [SplitNodes, SplitNodes][] = [
+        ["a", "b"],
+        ["b", "c"],
+        ["c", "d"],
+        ["d", "e1"],
+        ["d", "e2"],
+        ["e1", "f1"],
+        ["f1", "g1"],
+        ["e2", "f2"],
+        ["f2", "g2"],
+      ];
+      for (let i = 0; i < 100; i++) {
+        const graph = new Graph<SplitNodes>();
+
+        // Insert edges in random order
+        const edges = [...edgesToInsert];
+        while (edges.length > 0) {
+          const index = Math.floor(Math.random() * edges.length);
+          const [from, to] = edges.splice(index, 1)[0];
+          graph.addEdge(from, to);
+        }
+
+        expect(graph.nodeCount).toBe(10);
+        expect(graph.edgeCount).toBe(9);
+
+        const visited: SplitNodes[] = [];
+        for (const node of graph.depthFirst("a")) {
+          visited.push(node);
+        }
+        expect(visited.slice(0, 4)).toEqual(["a", "b", "c", "d"]);
+        if (visited[4] === "e1") {
+          expect(visited.slice(4)).toEqual([
+            "e1",
+            "f1",
+            "g1",
+            "e2",
+            "f2",
+            "g2",
+          ]);
+        } else {
+          expect(visited.slice(4)).toEqual([
+            "e2",
+            "f2",
+            "g2",
+            "e1",
+            "f1",
+            "g1",
+          ]);
+        }
+      }
+    });
+
+    it("should be able to iterate depth-first cyclic graph", () => {
+      const graph = new Graph<number>();
+      for (let i = 0; i < 100; i++) {
+        graph.addNode(i);
+      }
+      for (let i = 0; i < 100; i++) {
+        graph.addEdge(i, (i + 1) % 100);
+      }
+      expect(graph.nodeCount).toBe(100);
+      expect(graph.edgeCount).toBe(100);
+      const visited: number[] = [];
+      for (const node of graph.depthFirst(0)) {
+        visited.push(node);
+      }
+      expect(visited).toEqual(Array.from({ length: 100 }, (_, i) => i));
+    });
+
+    it("should be able to iterate depth-first dense cyclic graph", () => {
+      const graph = new Graph<Node>();
+      graph.addBiEdge("a", "b");
+      graph.addBiEdge("b", "c");
+      graph.addBiEdge("c", "d");
+      graph.addEdge("d", "a");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      graph.addBiEdge("f", "g");
+      graph.addEdge("g", "a");
+
+      expect(graph.nodeCount).toBe(7);
+      expect(graph.edgeCount).toBe(12);
+
+      const visited: Node[] = [];
+      for (const node of graph.depthFirst("a")) {
+        visited.push(node);
+      }
+
+      // fragile test, but it's the best we can do
+      expect(visited).toEqual(["a", "b", "c", "d", "e", "f", "g"]);
+    });
+
+    it("should be able to iterate depth-first disconnected bi-directed graph", () => {
+      const graph = new Graph<Node>();
+      graph.addBiEdge("a", "b");
+      graph.addBiEdge("b", "c");
+      graph.addBiEdge("c", "d");
+      graph.addBiEdge("e", "f");
+      graph.addBiEdge("f", "g");
+      graph.addBiEdge("g", "e");
+
+      expect(graph.nodeCount).toBe(7);
+      expect(graph.edgeCount).toBe(12);
+
+      const visited: Node[] = [];
+      for (const node of graph.depthFirst("a")) {
+        visited.push(node);
+      }
+
+      expect(visited).toEqual(["a", "b", "c", "d"]);
+
+      const visited2: Node[] = [];
+      for (const node of graph.depthFirst("e")) {
+        visited2.push(node);
+      }
+
+      // fragile test, but it's the best we can do
+      expect(visited2).toEqual(["e", "g", "f"]);
+    });
+  });
 });
 
 run();

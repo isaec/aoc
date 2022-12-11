@@ -187,7 +187,7 @@ export class Graph<T> {
    * @runtime O(|E|)
    * @returns an iterable of all the edges in the graph
    */
-  *getAllEdges(): Generator<[T, T]> {
+  *getAllEdges(): Generator<[T, T], void, unknown> {
     for (const [node, edges] of this.addressEdgesMap) {
       const nodeValue = this.getElementForAddress(node);
       for (const edge of edges) {
@@ -313,5 +313,35 @@ export class Graph<T> {
    */
   removeBiEdge(node1: T, node2: T): boolean {
     return this.removeEdge(node1, node2) && this.removeEdge(node2, node1);
+  }
+
+  *depthFirst(startNode: T) {
+    if (!this.hasNode(startNode)) throw new Error("Node not in graph");
+    const visited = new Set<T>();
+    const stack = [startNode];
+    while (stack.length > 0) {
+      const node = stack.pop()!;
+      if (visited.has(node)) continue;
+      visited.add(node);
+      yield node;
+      for (const edge of this.getEdges(node)) {
+        stack.push(edge);
+      }
+    }
+  }
+
+  *breadthFirst(startNode: T) {
+    if (!this.hasNode(startNode)) throw new Error("Node not in graph");
+    const visited = new Set<T>();
+    const queue = [startNode];
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      if (visited.has(node)) continue;
+      visited.add(node);
+      yield node;
+      for (const edge of this.getEdges(node)) {
+        queue.push(edge);
+      }
+    }
   }
 }
