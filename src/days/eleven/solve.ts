@@ -45,16 +45,18 @@ type Monkey = {
 const operationParser = (operation: string): ((old: number) => number) => {
   const [_left, right] = operation.split(" = ");
   const [_, mathOp, value] = right.split(" ");
-  const numValue = Number(value);
+
+  const numValue =
+    value === "old" ? (old: number) => old : (_old: number) => Number(value);
   switch (mathOp) {
     case "*":
-      return (old: number) => old * numValue;
+      return (old: number) => old * numValue(old);
     case "+":
-      return (old: number) => old + numValue;
+      return (old: number) => old + numValue(old);
     case "-":
-      return (old: number) => old - numValue;
+      return (old: number) => old - numValue(old);
     case "/":
-      return (old: number) => old / numValue;
+      return (old: number) => old / numValue(old);
     default:
       throw new Error(`Unknown math operation: ${mathOp}`);
   }
@@ -64,26 +66,26 @@ const testParser = (test: string): ((worryLevel: number) => boolean) => {
   // always divisible by, so we can just check if the number is divisible by the number
   const words = test.split(" ");
   const numValue = Number(words[2]);
-  console.log({ test, numValue });
+  // console.log({ test, numValue });
   return (worryLevel: number) => worryLevel % numValue === 0;
 };
 
 const monkeyParser = (input: string): Monkey => {
   const lines = input.split("\n");
   const id = Number(lines[0].split(" ")[1].slice(0, -1));
-  const items = lines[1].split(": ")[1].split(", ").map(Number);
+  const items = lines[1].split(": ")[1].split(", ").map(Number) ?? [];
   const operation = lines[2].split(": ")[1];
   const test = lines[3].split(": ")[1];
-  const ifTrue = lines[4].split(": ")[1].split(" ")[3];
-  const ifFalse = lines[5].split(": ")[1].split(" ")[3];
+  const ifTrueTarget = Number(lines[4].split(": ")[1].split(" ")[3]);
+  const ifFalseTarget = Number(lines[5].split(": ")[1].split(" ")[3]);
 
   return {
     id,
     items,
     operation: operationParser(operation),
     test: testParser(test),
-    ifTrue,
-    ifFalse,
+    ifTrueTarget,
+    ifFalseTarget,
   };
 };
 
@@ -107,12 +109,44 @@ await ex.part1(async ({ text, lines }, console, tick) => {
   */
 
   const monkeyStrings = text.split("\n\n");
+  const monkeys = monkeyStrings.map(monkeyParser);
 
-  monkeyStrings.forEach((monkeyString) => {
-    console.log(monkeyParser(monkeyString));
-  });
+  const totalRounds = 20;
 
-  // console.log(monkeyStrings);
+  const monkeyInspections = monkeys.map(() => 0);
+
+  for (let r = 1; r <= totalRounds; r++) {
+    for (const monkey of monkeys) {
+      // monkey inspect all of its items, one at a time
+      while (monkey.items.length > 0) {
+        tick();
+        console.log(`Monkey ${monkey.id} inspecting item ${monkey.items[0]}`);
+        monkeyInspections[monkey.id] += 1;
+
+        const itemWorryLevel = monkey.items.shift();
+        if (itemWorryLevel === undefined) throw new Error("No item to inspect");
+
+        const newItem = monkey.operation(itemWorryLevel);
+
+        console.log(`Item ${itemWorryLevel} becomes ${newItem}`);
+
+        if (monkey.test(newItem)) {
+          console.log(
+            `Item ${newItem} is true, throwing to monkey ${monkey.ifTrueTarget}`
+          );
+          monkeys[monkey.ifTrueTarget].items.push(newItem);
+        } else {
+          console.log(
+            `Item ${newItem} is false, throwing to monkey ${monkey.ifFalseTarget}`
+          );
+          monkeys[monkey.ifFalseTarget].items.push(newItem);
+        }
+      }
+      console.log(`Monkey ${monkey.id} has no more items to inspect\n`);
+    }
+    console.log(`Round ${r} complete`);
+  }
+  console.log(monkeyInspections);
 });
 
 await ex.testPart1([
