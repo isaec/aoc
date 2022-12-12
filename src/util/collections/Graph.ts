@@ -386,7 +386,7 @@ export class Graph<T> {
     const dist = new Map<NodeAddress, number>();
     const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
-    const queue = new heapify.MinQueue(1_000_000);
+    const queue = new heapify.MinQueue(this.nodeAddressMap.size ** 2);
 
     for (const node of this.nodeAddressMap.values()) {
       dist.set(node, Infinity);
