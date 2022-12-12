@@ -1,5 +1,5 @@
 {
   "deno.enable": true,
   "deno.unstable": true,
-  "cSpell.words": ["xclip"]
+  "cSpell.words": ["Prio", "xclip"]
 }

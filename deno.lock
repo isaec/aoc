@@ -20,14 +20,5 @@
     "https://deno.land/x/tincan@1.0.1/src/nodes/utilities.ts": "5e6a6f0e2650df4e10f7dfde889ef88a588fe9c3b3618aca2acd47e80b3ee3d8",
     "https://deno.land/x/tincan@1.0.1/src/reporter.ts": "84e09297da18c840076be951c02c749678b75dc89b2575f34db1378cbb509939",
     "https://deno.land/x/tincan@1.0.1/src/runner.ts": "54e1a0934a52469437bd4655df51f0c9148327d94a2b0d6c175f6f992a697b86"
-  },
-  "npm": {
-    "specifiers": { "heapify": "heapify@0.6.0" },
-    "packages": {
-      "heapify@0.6.0": {
-        "integrity": "sha512-TeTASfpsbj7CndSUiFHHAcFLV1vbHkpBzoWT7Eonxq8Jxv5O0KQqv9P9sWF6h+R5vZ8126+pxB1EX8CZtOPduw==",
-        "dependencies": {}
-      }
-    }
   }
 }

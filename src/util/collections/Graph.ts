@@ -1,6 +1,6 @@
 import { mapIterable } from "../iterable.ts";
 import { BiMap } from "./BiMap.ts";
-import heapify from "npm:heapify";
+import { RawPrioQueue } from "./PrioQueue.ts";
 
 /**
  * Branded type for node addresses, a number that uniquely identifies a node in a graph.
@@ -386,7 +386,7 @@ export class Graph<T> {
     const dist = new Map<NodeAddress, number>();
     const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
-    const queue = new heapify.MinQueue(this.nodeAddressMap.size ** 2);
+    const queue = new RawPrioQueue(this.nodeAddressMap.size ** 2);
 
     for (const node of this.nodeAddressMap.values()) {
       dist.set(node, Infinity);

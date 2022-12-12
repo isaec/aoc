@@ -625,9 +625,7 @@ describe("Graph", () => {
       expect(graph.nodeCount).toBe(7);
       expect(graph.edgeCount).toBe(6);
 
-      console.log("run the function");
       const path = graph.shortestPath("a", "g");
-      console.log("test done!");
       expect(path).toBeNull();
     });
   });
