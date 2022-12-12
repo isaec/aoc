@@ -546,6 +546,25 @@ describe("Graph", () => {
 
       expect(graph.nodeCount).toBe(10);
       expect(graph.edgeCount).toBe(9);
+
+      const visited: SplitNodes[] = [];
+      for (const node of graph.breadthFirst("a")) {
+        visited.push(node);
+      }
+
+      // fragile test, but it's the best we can do
+      expect(visited).toEqual([
+        "a",
+        "b",
+        "c",
+        "d",
+        "e1",
+        "e2",
+        "f1",
+        "f2",
+        "g1",
+        "g2",
+      ]);
     });
 
     it("should throw when iterating with a non-existent node", () => {
