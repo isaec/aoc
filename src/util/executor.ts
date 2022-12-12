@@ -139,6 +139,12 @@ class LoopBreaker {
   }
 }
 
+type PartFunction = (
+  input: Input,
+  console: TestConsole,
+  loopTick: LoopBreaker["tick"]
+) => Promise<void | undefined | number | string>;
+
 export default class Executor {
   private readonly path: string;
   private shouldAbort = false;
@@ -146,10 +152,7 @@ export default class Executor {
 
   private readonly input;
 
-  private functionMap = new Map<
-    string,
-    Parameters<typeof Executor.prototype.part>[1]
-  >();
+  private functionMap = new Map<string, PartFunction>();
 
   constructor(path: string) {
     this.path = path;
@@ -161,15 +164,15 @@ export default class Executor {
       await setClipboard(this.result.answer.toString());
   }
 
-  private async part(
-    label: string,
-    fn: (
-      input: Input,
-      console: TestConsole,
-      loopTick: LoopBreaker["tick"]
-    ) => Promise<void | undefined | number | string>
-  ) {
+  private async storePart(label: string, fn: PartFunction) {
     this.functionMap.set(label, fn);
+  }
+
+  private async runPart(label: string) {
+    const fn = this.functionMap.get(label);
+
+    if (fn === undefined) throw new Error(`No function for part ${label}`);
+
     if (this.shouldAbort) return;
     barLog(`${label} execution`, blue, true);
     const input = await this.input;
@@ -321,20 +324,22 @@ export default class Executor {
         run === true ? [inputString, expected] : false;
   }
 
-  public async part1(fn: Parameters<typeof Executor.prototype.part>[1]) {
-    await this.part("part 1", fn);
+  public async part1(fn: PartFunction) {
+    await this.storePart("part 1", fn);
   }
 
   public async testPart1(tests: Parameters<typeof Executor.prototype.test>[1]) {
     await this.test("part 1", tests);
+    await this.runPart("part 1");
   }
 
-  public async part2(fn: Parameters<typeof Executor.prototype.part>[1]) {
-    await this.part("part 2", fn);
-    await this.applyClipboard();
+  public async part2(fn: PartFunction) {
+    await this.storePart("part 2", fn);
   }
 
   public async testPart2(tests: Parameters<typeof Executor.prototype.test>[1]) {
     await this.test("part 2", tests);
+    await this.runPart("part 2");
+    await this.applyClipboard();
   }
 }
