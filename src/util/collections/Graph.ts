@@ -7,6 +7,8 @@ import { RawPrioQueue } from "./PrioQueue.ts";
  */
 type NodeAddress = number & { _nodeAddress: never };
 
+type Distance = number & { __distance: never };
+
 /**
  * An unweighted directed graph, optimized for fast lookups and insertion. Nodes are mapped to a unique address in a {@link BiMap}, and edges are stored in a {@link Map} of node addresses to sets of node addresses.
  *
@@ -368,7 +370,7 @@ export class Graph<T> {
     const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
     const queue = new RawPrioQueue<NodeAddress, Distance>(
-      this.nodeAddressMap.size ** 2
+      this.nodeAddressMap.size
     );
 
     for (const node of this.nodeAddressMap.values()) {

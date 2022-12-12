@@ -5,7 +5,10 @@ export class RawPrioQueue<I extends number, V extends number> {
   private values: Uint32Array;
   private length: number;
 
+  readonly maxSize: number;
+
   constructor(size = 10_000) {
+    this.maxSize = size;
     this.ids = new Uint16Array(size);
     this.values = new Uint32Array(size);
     this.length = 0;
