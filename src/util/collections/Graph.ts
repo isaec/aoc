@@ -414,8 +414,6 @@ export class Graph<T> {
     const endNodeAddress = this.nodeAddressMap.get(endNode);
     if (endNodeAddress === undefined) throw new Error("End node not in graph");
 
-    type Distance = number & { __priority: never };
-
     const dist = new Map<NodeAddress, Distance>();
     const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
