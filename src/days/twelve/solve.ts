@@ -150,15 +150,15 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
   let minPath = Infinity;
 
-  for (const startCoord of startCoords) {
-    // find the shortest path from S to E
-    const path = graph.shortestPath(startCoord, makeCoord(endX, endY));
-    if (path) {
-      minPath = Math.min(minPath, path.length - 1);
+  const pathMap = graph.shortestPaths(startCoords, makeCoord(endX, endY));
+
+  for (const [coord, path] of pathMap) {
+    if (path.length < minPath) {
+      minPath = path.length;
     }
   }
 
-  return minPath;
+  return minPath - 1;
 });
 
 await ex.testPart2([

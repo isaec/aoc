@@ -407,4 +407,71 @@ export class Graph<T> {
 
     return path.reverse();
   }
+
+  shortestPaths(startNodes: T[], endNode: T): Map<T, T[] | null> {
+    if (startNodes.length === 0) throw new Error("No start nodes provided");
+
+    const endNodeAddress = this.nodeAddressMap.get(endNode);
+    if (endNodeAddress === undefined) throw new Error("End node not in graph");
+
+    type Distance = number & { __priority: never };
+
+    const dist = new Map<NodeAddress, Distance>();
+    const prev = new Map<NodeAddress, NodeAddress | undefined>();
+
+    const queue = new RawPrioQueue<NodeAddress, Distance>(
+      this.nodeAddressMap.size
+    );
+
+    for (const node of this.nodeAddressMap.values()) {
+      dist.set(node, Infinity as Distance);
+      prev.set(node, undefined);
+      queue.push(node, Infinity as Distance);
+    }
+
+    for (const startNode of startNodes) {
+      const startNodeAddress = this.nodeAddressMap.get(startNode);
+      if (startNodeAddress === undefined)
+        throw new Error("Start node not in graph");
+      dist.set(startNodeAddress, 0 as Distance);
+      queue.push(startNodeAddress, 0 as Distance);
+    }
+
+    while (queue.size > 0) {
+      const u = queue.pop()! as NodeAddress;
+
+      for (const v of this.addressEdgesMap.get(u) ?? []) {
+        const alt = (dist.get(u)! + 1) as Distance;
+        if (alt < dist.get(v)!) {
+          dist.set(v, alt);
+          prev.set(v, u);
+          queue.push(v, alt);
+        }
+      }
+    }
+
+    const paths = new Map<T, T[] | null>();
+
+    for (const startNode of startNodes) {
+      const startNodeAddress = this.nodeAddressMap.get(startNode);
+      if (startNodeAddress === undefined)
+        throw new Error("Start node not in graph");
+
+      const path = [];
+      let node: NodeAddress | undefined = endNodeAddress;
+      while (node !== undefined) {
+        path.push(this.nodeAddressMap.getKey(node));
+        node = prev.get(node);
+      }
+
+      paths.set(
+        startNode,
+        path.length === 1 && path[0] === endNode
+          ? null
+          : (path.reverse() as T[])
+      );
+    }
+
+    return paths;
+  }
 }
