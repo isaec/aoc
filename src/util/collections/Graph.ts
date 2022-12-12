@@ -1,5 +1,6 @@
 import { mapIterable } from "../iterable.ts";
 import { BiMap } from "./BiMap.ts";
+import heapify from "npm:heapify";
 
 /**
  * Branded type for node addresses, a number that uniquely identifies a node in a graph.
@@ -353,9 +354,13 @@ export class Graph<T> {
    * @returns an array of nodes representing the shortest path from startNode to endNode, or null if no path exists
    */
   shortestPath(startNode: T, endNode: T) {
-    if (!this.hasNode(startNode)) throw new Error("Node not in graph");
-    if (!this.hasNode(endNode)) throw new Error("Node not in graph");
     if (startNode === endNode) return [startNode];
+
+    const startNodeAddress = this.nodeAddressMap.get(startNode);
+    if (startNodeAddress === undefined)
+      throw new Error("Start node not in graph");
+    const endNodeAddress = this.nodeAddressMap.get(endNode);
+    if (endNodeAddress === undefined) throw new Error("End node not in graph");
     /**
  1  function Dijkstra(Graph, source):
  2      
@@ -378,40 +383,43 @@ export class Graph<T> {
 19      return dist[], prev[]
      */
 
-    const dist = new Map<T, number>();
-    const prev = new Map<T, T | undefined>();
+    const dist = new Map<NodeAddress, number>();
+    const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
-    const q = [...this.nodeAddressMap.keys()];
-    for (const node of q) {
+    const queue = new heapify.MinQueue(1_000_000);
+
+    for (const node of this.nodeAddressMap.values()) {
       dist.set(node, Infinity);
       prev.set(node, undefined);
+      queue.push(node, Infinity);
     }
 
-    dist.set(startNode, 0);
+    dist.set(startNodeAddress, 0);
+    queue.push(endNodeAddress, 0);
 
-    while (q.length > 0) {
-      const u = q.reduce((a, b) => (dist.get(a)! < dist.get(b)! ? a : b));
-      q.splice(q.indexOf(u), 1);
+    while (queue.size > 0) {
+      const u = queue.pop()! as NodeAddress;
 
-      for (const v of this.getEdges(u)) {
+      for (const v of this.addressEdgesMap.get(u) ?? []) {
         const alt = dist.get(u)! + 1;
         if (alt < dist.get(v)!) {
           dist.set(v, alt);
           prev.set(v, u);
+          queue.push(v, alt);
         }
       }
     }
 
-    // detect no path
-    if (dist.get(endNode)! === Infinity) return null;
-
     const path = [];
-    let node: T | undefined = endNode;
+    let node: NodeAddress | undefined = endNodeAddress;
     while (node !== undefined) {
-      path.unshift(node);
+      path.push(node);
       node = prev.get(node);
     }
 
-    return path;
+    // detect if there is no path
+    if (path[path.length - 1] !== startNodeAddress) return null;
+
+    return path.reverse().map((node) => this.nodeAddressMap.getKey(node));
   }
 }
