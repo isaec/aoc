@@ -344,4 +344,74 @@ export class Graph<T> {
       }
     }
   }
+
+  /**
+   * Finds the shortest path between two nodes. Works with cycles. Uses Dijkstra's algorithm.
+   * @param startNode the node to start path finding from
+   * @param endNode the node to find a path to
+   * @throws if either node is not in the graph
+   * @returns an array of nodes representing the shortest path from startNode to endNode, or null if no path exists
+   */
+  shortestPath(startNode: T, endNode: T) {
+    if (!this.hasNode(startNode)) throw new Error("Node not in graph");
+    if (!this.hasNode(endNode)) throw new Error("Node not in graph");
+    if (startNode === endNode) return [startNode];
+    /**
+ 1  function Dijkstra(Graph, source):
+ 2      
+ 3      for each vertex v in Graph.Vertices:
+ 4          dist[v] ← INFINITY
+ 5          prev[v] ← UNDEFINED
+ 6          add v to Q
+ 7      dist[source] ← 0
+ 8      
+ 9      while Q is not empty:
+10          u ← vertex in Q with min dist[u]
+11          remove u from Q
+12          
+13          for each neighbor v of u still in Q:
+14              alt ← dist[u] + Graph.Edges(u, v)
+15              if alt < dist[v]:
+16                  dist[v] ← alt
+17                  prev[v] ← u
+18
+19      return dist[], prev[]
+     */
+
+    const dist = new Map<T, number>();
+    const prev = new Map<T, T | undefined>();
+
+    const q = [...this.nodeAddressMap.keys()];
+    for (const node of q) {
+      dist.set(node, Infinity);
+      prev.set(node, undefined);
+    }
+
+    dist.set(startNode, 0);
+
+    while (q.length > 0) {
+      const u = q.reduce((a, b) => (dist.get(a)! < dist.get(b)! ? a : b));
+      q.splice(q.indexOf(u), 1);
+
+      for (const v of this.getEdges(u)) {
+        const alt = dist.get(u)! + 1;
+        if (alt < dist.get(v)!) {
+          dist.set(v, alt);
+          prev.set(v, u);
+        }
+      }
+    }
+
+    // detect no path
+    if (dist.get(endNode)! === Infinity) return null;
+
+    const path = [];
+    let node: T | undefined = endNode;
+    while (node !== undefined) {
+      path.unshift(node);
+      node = prev.get(node);
+    }
+
+    return path;
+  }
 }

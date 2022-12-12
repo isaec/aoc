@@ -576,6 +576,61 @@ describe("Graph", () => {
       }).toThrow();
     });
   });
+
+  describe("shortest path", () => {
+    it("should be able to find the shortest path between two nodes", () => {
+      const graph = new Graph<Node>();
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      graph.addEdge("f", "g");
+      graph.addEdge("c", "g");
+
+      expect(graph.nodeCount).toBe(7);
+      expect(graph.edgeCount).toBe(7);
+
+      const path = graph.shortestPath("a", "g");
+      expect(path).toEqual(["a", "b", "c", "g"]);
+    });
+
+    it("should be able to find the shortest path between two nodes with a cycle", () => {
+      const graph = new Graph<Node>();
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      graph.addEdge("f", "g");
+      graph.addEdge("c", "g");
+      graph.addEdge("g", "a");
+
+      expect(graph.nodeCount).toBe(7);
+      expect(graph.edgeCount).toBe(8);
+
+      const path = graph.shortestPath("a", "g");
+      expect(path).toEqual(["a", "b", "c", "g"]);
+    });
+
+    it("should return null if there is no path between two nodes", () => {
+      const graph = new Graph<Node>();
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "b");
+      graph.addEdge("d", "e");
+      graph.addEdge("e", "f");
+      graph.addEdge("f", "g");
+
+      expect(graph.nodeCount).toBe(7);
+      expect(graph.edgeCount).toBe(6);
+
+      console.log("run the function");
+      const path = graph.shortestPath("a", "g");
+      console.log("test done!");
+      expect(path).toBeNull();
+    });
+  });
 });
 
 run();
