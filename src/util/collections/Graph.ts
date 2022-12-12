@@ -361,47 +361,30 @@ export class Graph<T> {
       throw new Error("Start node not in graph");
     const endNodeAddress = this.nodeAddressMap.get(endNode);
     if (endNodeAddress === undefined) throw new Error("End node not in graph");
-    /**
- 1  function Dijkstra(Graph, source):
- 2      
- 3      for each vertex v in Graph.Vertices:
- 4          dist[v] ← INFINITY
- 5          prev[v] ← UNDEFINED
- 6          add v to Q
- 7      dist[source] ← 0
- 8      
- 9      while Q is not empty:
-10          u ← vertex in Q with min dist[u]
-11          remove u from Q
-12          
-13          for each neighbor v of u still in Q:
-14              alt ← dist[u] + Graph.Edges(u, v)
-15              if alt < dist[v]:
-16                  dist[v] ← alt
-17                  prev[v] ← u
-18
-19      return dist[], prev[]
-     */
 
-    const dist = new Map<NodeAddress, number>();
+    type Distance = number & { __priority: never };
+
+    const dist = new Map<NodeAddress, Distance>();
     const prev = new Map<NodeAddress, NodeAddress | undefined>();
 
-    const queue = new RawPrioQueue(this.nodeAddressMap.size ** 2);
+    const queue = new RawPrioQueue<NodeAddress, Distance>(
+      this.nodeAddressMap.size ** 2
+    );
 
     for (const node of this.nodeAddressMap.values()) {
-      dist.set(node, Infinity);
+      dist.set(node, Infinity as Distance);
       prev.set(node, undefined);
-      queue.push(node, Infinity);
+      queue.push(node, Infinity as Distance);
     }
 
-    dist.set(startNodeAddress, 0);
-    queue.push(endNodeAddress, 0);
+    dist.set(startNodeAddress, 0 as Distance);
+    queue.push(endNodeAddress, 0 as Distance);
 
     while (queue.size > 0) {
       const u = queue.pop()! as NodeAddress;
 
       for (const v of this.addressEdgesMap.get(u) ?? []) {
-        const alt = dist.get(u)! + 1;
+        const alt = (dist.get(u)! + 1) as Distance;
         if (alt < dist.get(v)!) {
           dist.set(v, alt);
           prev.set(v, u);

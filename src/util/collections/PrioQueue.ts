@@ -1,6 +1,6 @@
 // typescript ripoff of https://github.com/mourner/flatqueue with TypedArray
 
-export class RawPrioQueue {
+export class RawPrioQueue<I extends number, V extends number> {
   private ids: Uint16Array;
   private values: Uint32Array;
   private length: number;
@@ -19,7 +19,7 @@ export class RawPrioQueue {
     this.length = 0;
   }
 
-  push(id: number, value: number) {
+  push(id: I, value: V) {
     let pos = this.length++;
 
     while (pos > 0) {
@@ -35,7 +35,7 @@ export class RawPrioQueue {
     this.values[pos] = value;
   }
 
-  pop() {
+  pop(): I | undefined {
     if (this.length === 0) return undefined;
 
     const top = this.ids[0];
@@ -70,16 +70,16 @@ export class RawPrioQueue {
       this.values[pos] = value;
     }
 
-    return top;
+    return top as I;
   }
 
-  peek() {
+  peek(): I | undefined {
     if (this.length === 0) return undefined;
-    return this.ids[0];
+    return this.ids[0] as I;
   }
 
-  peekValue() {
+  peekValue(): V | undefined {
     if (this.length === 0) return undefined;
-    return this.values[0];
+    return this.values[0] as V;
   }
 }
