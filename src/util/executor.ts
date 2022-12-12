@@ -84,10 +84,10 @@ const barLog = (
 
 const msFormatter = new Intl.NumberFormat("en-US", {
   style: "unit",
-  unit: "millisecond",
+  unit: "second",
   unitDisplay: "narrow",
 });
-const formatMs = (ms: number) => msFormatter.format(ms);
+const formatMs = (ms: number) => msFormatter.format(ms / 1000);
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 const formatNumber = (n: number) => numberFormatter.format(n);
