@@ -7,6 +7,17 @@ const expectContentEqual = <T>(a: Iterable<T>, b: Iterable<T>) => {
 };
 
 type Node = "a" | "b" | "c" | "d" | "e" | "f" | "g";
+type SplitNodes =
+  | "a"
+  | "b"
+  | "c"
+  | "d"
+  | "e1"
+  | "e2"
+  | "f1"
+  | "f2"
+  | "g1"
+  | "g2";
 
 describe("Graph", () => {
   it("should be able to add nodes", () => {
@@ -323,17 +334,6 @@ describe("Graph", () => {
     });
 
     it("should be able to iterate depth-first singly linked set of nodes with a branch", () => {
-      type SplitNodes =
-        | "a"
-        | "b"
-        | "c"
-        | "d"
-        | "e1"
-        | "e2"
-        | "f1"
-        | "f2"
-        | "g1"
-        | "g2";
       const graph = new Graph<SplitNodes>();
       graph.addEdge("a", "b");
       graph.addEdge("b", "c");
@@ -361,17 +361,6 @@ describe("Graph", () => {
     });
 
     it("should be able to iterate depth-first singly linked set of nodes with a branch regardless of insertion order ", () => {
-      type SplitNodes =
-        | "a"
-        | "b"
-        | "c"
-        | "d"
-        | "e1"
-        | "e2"
-        | "f1"
-        | "f2"
-        | "g1"
-        | "g2";
       const edgesToInsert: readonly [SplitNodes, SplitNodes][] = [
         ["a", "b"],
         ["b", "c"],
@@ -490,6 +479,82 @@ describe("Graph", () => {
 
       // fragile test, but it's the best we can do
       expect(visited2).toEqual(["e", "g", "f"]);
+    });
+
+    it("should throw when iterating with a non-existent node", () => {
+      const graph = new Graph<number>();
+      expect(() => {
+        for (const _ of graph.depthFirst(0)) {
+          // do nothing
+        }
+      }).toThrow();
+    });
+  });
+
+  describe("breadth-first traversal", () => {
+    it("should be able to iterate breadth-first singly linked set of nodes", () => {
+      const graph = new Graph<number>();
+      graph.addEdge(0, 1);
+      graph.addEdge(1, 2);
+      graph.addEdge(2, 3);
+      graph.addEdge(3, 4);
+      graph.addEdge(4, 5);
+      graph.addEdge(5, 6);
+      graph.addEdge(6, 7);
+
+      expect(graph.nodeCount).toBe(8);
+      expect(graph.edgeCount).toBe(7);
+
+      const visited: number[] = [];
+      for (const node of graph.breadthFirst(0)) {
+        visited.push(node);
+      }
+      expect(visited).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    });
+
+    it("should be able to iterate breadth-first singly linked set of nodes with a cycle", () => {
+      const graph = new Graph<number>();
+      graph.addEdge(0, 1);
+      graph.addEdge(1, 2);
+      graph.addEdge(2, 3);
+      graph.addEdge(3, 4);
+      graph.addEdge(4, 5);
+      graph.addEdge(5, 6);
+      graph.addEdge(6, 7);
+      graph.addEdge(7, 0);
+
+      expect(graph.nodeCount).toBe(8);
+      expect(graph.edgeCount).toBe(8);
+
+      const visited: number[] = [];
+      for (const node of graph.breadthFirst(0)) {
+        visited.push(node);
+      }
+      expect(visited).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    });
+
+    it("should be able to iterate breadth-first singly linked set of nodes with a branch", () => {
+      const graph = new Graph<SplitNodes>();
+      graph.addEdge("a", "b");
+      graph.addEdge("b", "c");
+      graph.addEdge("c", "d");
+      graph.addEdges("d", ["e1", "e2"]);
+      graph.addEdge("e1", "f1");
+      graph.addEdge("f1", "g1");
+      graph.addEdge("e2", "f2");
+      graph.addEdge("f2", "g2");
+
+      expect(graph.nodeCount).toBe(10);
+      expect(graph.edgeCount).toBe(9);
+    });
+
+    it("should throw when iterating with a non-existent node", () => {
+      const graph = new Graph<number>();
+      expect(() => {
+        for (const _ of graph.breadthFirst(0)) {
+          // do nothing
+        }
+      }).toThrow();
     });
   });
 });
