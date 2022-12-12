@@ -1,4 +1,4 @@
-// typescript ripoff of https://github.com/mourner/flatqueue with TypedArray, and mapped variant
+// typescript ripoff of https://github.com/mourner/flatqueue with TypedArray
 
 export class RawPrioQueue {
   private ids: Uint16Array;
