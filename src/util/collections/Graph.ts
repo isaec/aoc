@@ -396,13 +396,13 @@ export class Graph<T> {
     const path = [];
     let node: NodeAddress | undefined = endNodeAddress;
     while (node !== undefined) {
-      path.push(node);
+      path.push(this.nodeAddressMap.getKey(node));
       node = prev.get(node);
     }
 
     // detect if there is no path
-    if (path[path.length - 1] !== startNodeAddress) return null;
+    if (path.length === 1 && path[0] === endNode) return null;
 
-    return path.reverse().map((node) => this.nodeAddressMap.getKey(node));
+    return path.reverse();
   }
 }
