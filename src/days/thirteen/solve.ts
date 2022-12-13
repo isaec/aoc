@@ -40,11 +40,13 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     }
   };
 
-  const isOrdered = (pair: Pair): boolean => {
+  type OrderResult = "ordered" | "unordered" | "equal";
+
+  const isOrdered = (pair: Pair): OrderResult => {
     for (let i = 0; i < pair.left.length; i++) {
       if (pair.right[i] === undefined) {
         console.log("\tright ran out of items first");
-        return false;
+        return "unordered";
       }
       if (
         typeof pair.left[i] === "number" &&
@@ -56,22 +58,31 @@ await ex.part1(async ({ text, lines }, console, tick) => {
             pair.left[i],
             pair.right[i]
           );
-          return false;
+          return "unordered";
         } else if (pair.left[i] == pair.right[i]) continue;
         else if (pair.left[i] < pair.right[i]) {
-          return true;
+          return "ordered";
         } else {
           throw new Error("unreachable"); // ?
         }
       } else {
         console.log("\tsub-pair", pair.left[i], pair.right[i]);
-        return isOrdered({
+        const order = isOrdered({
           left: asArray(pair.left[i]),
           right: asArray(pair.right[i]),
         });
+        if (order === "ordered") {
+          return "ordered";
+        }
+        if (order === "unordered") {
+          console.log("\tsub-pair is unordered");
+          return "unordered";
+        }
+        console.log("\tsub-pair is equal");
       }
     }
-    return true;
+    console.log("\tleft ran out of items first");
+    return "ordered";
   };
 
   let indicesSum = 0;
@@ -85,7 +96,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     */
     console.log("pair", i + 1);
 
-    if (isOrdered(pair)) {
+    if (isOrdered(pair) === "ordered") {
       orderedPairs.push(pair);
       indicesSum += i + 1;
       console.log("\tordered pair");
