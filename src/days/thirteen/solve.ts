@@ -42,7 +42,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
 
   type OrderResult = "ordered" | "unordered" | "equal";
 
-  const isOrdered = (pair: Pair): OrderResult => {
+  const isOrdered = (pair: Pair, recursive = false): OrderResult => {
     for (let i = 0; i < pair.left.length; i++) {
       if (pair.right[i] === undefined) {
         console.log("\tright ran out of items first");
@@ -67,10 +67,13 @@ await ex.part1(async ({ text, lines }, console, tick) => {
         }
       } else {
         console.log("\tsub-pair", pair.left[i], pair.right[i]);
-        const order = isOrdered({
-          left: asArray(pair.left[i]),
-          right: asArray(pair.right[i]),
-        });
+        const order = isOrdered(
+          {
+            left: asArray(pair.left[i]),
+            right: asArray(pair.right[i]),
+          },
+          true
+        );
         if (order === "ordered") {
           return "ordered";
         }
@@ -81,7 +84,17 @@ await ex.part1(async ({ text, lines }, console, tick) => {
         console.log("\tsub-pair is equal");
       }
     }
-    console.log("\tleft ran out of items first");
+    if (!recursive) {
+      console.log("\tordered at base level");
+      return "ordered";
+    }
+
+    if (pair.left.length === pair.right.length) {
+      console.log("\tnested equality is equal");
+      return "equal";
+    }
+
+    console.log("\tnested equality is ordered (left ran out of items first)");
     return "ordered";
   };
 
