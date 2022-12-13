@@ -155,13 +155,169 @@ input
 
 // deno-lint-ignore no-unused-vars
 await ex.part2(async ({ text, lines }, console, tick) => {
-  // goal:
+  type Packet = Array<number | Packet>;
+
+  type Pair = {
+    left: Packet;
+    right: Packet;
+  };
+
+  const pairs: Pair[] = [];
+
+  for (let i = 0; i < lines.length; i += 3) {
+    // console.log(lines[i], lines[i + 1]);
+    pairs.push({
+      left: JSON.parse(lines[i]),
+      right: JSON.parse(lines[i + 1]),
+    });
+  }
+
+  const asArray = (value: number | Packet): Packet => {
+    if (typeof value === "number") {
+      return [value];
+    } else {
+      return value;
+    }
+  };
+
+  type OrderResult = "ordered" | "unordered" | "equal";
+
+  const isOrdered = (pair: Pair, recursive = false): OrderResult => {
+    for (let i = 0; i < pair.left.length; i++) {
+      if (pair.right[i] === undefined) {
+        console.log("\tright ran out of items first");
+        return "unordered";
+      }
+      if (
+        typeof pair.left[i] === "number" &&
+        typeof pair.right[i] === "number"
+      ) {
+        if (pair.left[i] > pair.right[i]) {
+          console.log(
+            "\tleft is greater than right",
+            pair.left[i],
+            pair.right[i]
+          );
+          return "unordered";
+        } else if (pair.left[i] == pair.right[i]) continue;
+        else if (pair.left[i] < pair.right[i]) {
+          return "ordered";
+        } else {
+          throw new Error("unreachable"); // ?
+        }
+      } else {
+        console.log("\tsub-pair", pair.left[i], pair.right[i]);
+        const order = isOrdered(
+          {
+            left: asArray(pair.left[i]),
+            right: asArray(pair.right[i]),
+          },
+          true
+        );
+        if (order === "ordered") {
+          return "ordered";
+        }
+        if (order === "unordered") {
+          console.log("\tsub-pair is unordered");
+          return "unordered";
+        }
+        console.log("\tsub-pair is equal");
+      }
+    }
+    if (!recursive) {
+      console.log("\tordered at base level");
+      return "ordered";
+    }
+
+    if (pair.left.length === pair.right.length) {
+      console.log("\tnested equality is equal");
+      return "equal";
+    }
+
+    console.log("\tnested equality is ordered (left ran out of items first)");
+    return "ordered";
+  };
+
+  // extract all the packets
+  const packets: Packet[] = [];
+  for (const pair of pairs) {
+    packets.push(pair.left);
+    packets.push(pair.right);
+  }
+
+  // divider packets
+  packets.push([[2]]);
+  packets.push([[6]]);
+
+  // sort all the packets until the entire list is in order
+  let sorted = false;
+  while (!sorted) {
+    tick();
+    sorted = true;
+    for (let i = 0; i < packets.length - 1; i++) {
+      const order = isOrdered({
+        left: packets[i],
+        right: packets[i + 1],
+      });
+      if (order === "unordered") {
+        sorted = false;
+        const temp = packets[i];
+        packets[i] = packets[i + 1];
+        packets[i + 1] = temp;
+      }
+    }
+  }
+
+  /**
+   * Afterward, locate the divider packets. To find the decoder key for this distress signal, you need to determine the indices of the two divider packets and multiply them together. (The first packet is at index 1, the second packet is at index 2, and so on.) In this example, the divider packets are 10th and 14th, and so the decoder key is 140.
+   */
+
+  const packetTwo =
+    packets.findIndex(
+      (packet) =>
+        packet.length === 1 &&
+        Array.isArray(packet[0]) &&
+        packet[0].length === 1 &&
+        packet[0][0] === 2
+    ) + 1;
+  const packetSix =
+    packets.findIndex(
+      (packet) =>
+        packet.length === 1 &&
+        Array.isArray(packet[0]) &&
+        packet[0].length === 1 &&
+        packet[0][0] === 6
+    ) + 1;
+
+  return packetTwo * packetSix;
 });
 
 await ex.testPart2([
   ex.c`
-input
-`()(false),
+[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]
+`(140)(true),
 
   ex.c`
 input
