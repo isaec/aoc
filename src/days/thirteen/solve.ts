@@ -250,23 +250,12 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   packets.push([[6]]);
 
   // sort all the packets until the entire list is in order
-  let sorted = false;
-  while (!sorted) {
-    tick();
-    sorted = true;
-    for (let i = 0; i < packets.length - 1; i++) {
-      const order = isOrdered({
-        left: packets[i],
-        right: packets[i + 1],
-      });
-      if (order === "unordered") {
-        sorted = false;
-        const temp = packets[i];
-        packets[i] = packets[i + 1];
-        packets[i + 1] = temp;
-      }
-    }
-  }
+  packets.sort((a, b) => {
+    const order = isOrdered({ left: a, right: b });
+    if (order === "ordered") return -1;
+    if (order === "unordered") return 1;
+    return 0;
+  });
 
   /**
    * Afterward, locate the divider packets. To find the decoder key for this distress signal, you need to determine the indices of the two divider packets and multiply them together. (The first packet is at index 1, the second packet is at index 2, and so on.) In this example, the divider packets are 10th and 14th, and so the decoder key is 140.
