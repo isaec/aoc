@@ -115,15 +115,8 @@ await ex.part1(async ({ text, lines }, console, tick) => {
       tick();
 
       const [x, y] = sandPos;
-      if (gridHas(wallGrid, x, y + 1)) {
-        // sand is resting
-        setGrid(inertSandGrid, x, y);
-        sandGrid[x][y] = false;
-        restingSandCount++;
-        break;
-      }
 
-      if (gridHas(inertSandGrid, x, y + 1)) {
+      if (gridHas(inertSandGrid, x, y + 1) || gridHas(wallGrid, x, y + 1)) {
         // sand must shift
         if (
           !gridHas(wallGrid, x - 1, y + 1) &&
