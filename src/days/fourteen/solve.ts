@@ -16,8 +16,9 @@ await ex.part1(async ({ text, lines }, console, tick) => {
   const wallGrid: boolean[][] = [];
 
   const gridPrinter = (grid: boolean[][]) => {
+    console.log();
     for (let y = 0; y < 10; y++) {
-      let line = "";
+      let line = `${y} `;
       for (let x = 490; x < 510; x++) {
         line += grid[x] && grid[x][y] ? "#" : ".";
       }
@@ -30,32 +31,43 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     wallGrid[x][y] = true;
   };
 
-  writeWall(500, 0);
-  writeWall(501, 0);
-  writeWall(499, 0);
-  writeWall(500, 1);
-  writeWall(501, 1);
-  writeWall(499, 1);
-  writeWall(500, 5);
-
-  gridPrinter(wallGrid);
-
-  return;
-
   for (const line of lines) {
+    console.log("\n", line);
     const points = line.split(" -> ").map((p) => p.split(",").map(Number)) as [
       [number, number]
     ];
 
     let lastPoint = points[0];
 
-    for (const [x, y] of points) {
-      for (let i = lastPoint[0]; i <= x; i++) {
-        for (let j = lastPoint[1]; j <= y; j++) {
-          writeWall(i, j);
-        }
+    writeWall(...lastPoint);
+
+    for (const point of points.slice(1)) {
+      const [x1, y1] = lastPoint;
+      const [x2, y2] = point;
+
+      if (x1 === x2) {
+        if (y1 < y2)
+          for (let y = y1; y <= y2; y++) {
+            writeWall(x1, y);
+          }
+        else
+          for (let y = y1; y >= y2; y--) {
+            writeWall(x1, y);
+          }
+      } else if (y1 === y2) {
+        if (x1 < x2)
+          for (let x = x1; x <= x2; x++) {
+            writeWall(x, y1);
+          }
+        else
+          for (let x = x1; x >= x2; x--) {
+            writeWall(x, y1);
+          }
+      } else {
+        throw new Error("Invalid point");
       }
-      lastPoint = [x, y];
+
+      lastPoint = point;
     }
   }
 
