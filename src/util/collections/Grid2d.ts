@@ -18,7 +18,7 @@ type PointObj = {
   y: number;
 };
 
-export class Point {
+export class Point2d {
   readonly x: number;
   readonly y: number;
 
@@ -27,34 +27,34 @@ export class Point {
     this.y = y;
   }
 
-  add(point: Point): Point {
-    return new Point(this.x + point.x, this.y + point.y);
+  add(point: Point2d): Point2d {
+    return new Point2d(this.x + point.x, this.y + point.y);
   }
 
-  subtract(point: Point): Point {
-    return new Point(this.x - point.x, this.y - point.y);
+  subtract(point: Point2d): Point2d {
+    return new Point2d(this.x - point.x, this.y - point.y);
   }
 
-  multiply(point: Point): Point {
-    return new Point(this.x * point.x, this.y * point.y);
+  multiply(point: Point2d): Point2d {
+    return new Point2d(this.x * point.x, this.y * point.y);
   }
 
-  divide(point: Point): Point {
-    return new Point(this.x / point.x, this.y / point.y);
+  divide(point: Point2d): Point2d {
+    return new Point2d(this.x / point.x, this.y / point.y);
   }
 
-  into(fn: (pointObj: PointObj) => Point | PointObj | void): Point {
+  into(fn: (pointObj: PointObj) => Point2d | PointObj | void): Point2d {
     const pointObj = { x: this.x, y: this.y };
 
     const result = fn(pointObj);
-    if (result instanceof Point) return result;
+    if (result instanceof Point2d) return result;
 
-    if (typeof result === "object") return new Point(result.x, result.y);
+    if (typeof result === "object") return new Point2d(result.x, result.y);
 
-    return new Point(pointObj.x, pointObj.y);
+    return new Point2d(pointObj.x, pointObj.y);
   }
 
-  equals(point: Point): boolean {
+  equals(point: Point2d): boolean {
     return this.x === point?.x && this.y === point?.y;
   }
 
@@ -63,13 +63,13 @@ export class Point {
   }
 
   // bad implementation...
-  static fromString(str: string): Point {
+  static fromString(str: string): Point2d {
     if (str.charAt(0) !== "(" || str.charAt(str.length - 1) !== ")")
       throw new Error(`Invalid point: ${str}`);
     const [x, y] = str.slice(1, -1).split(", ").map(Number);
     if (Number.isNaN(x) || Number.isNaN(y))
       throw new Error(`Invalid point: ${str}, parsed as (${x}, ${y})`);
-    return new Point(x, y);
+    return new Point2d(x, y);
   }
 }
 
