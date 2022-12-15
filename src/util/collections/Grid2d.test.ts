@@ -21,10 +21,6 @@ describe("Grid2d", () => {
     expect(grid.maxY).toBe(3);
   });
 
-  it("should construct infinite grid", () => {
-    const _grid = new InfiniteGrid2d("x");
-  });
-
   it("should get", () => {
     const grid = makeGrid();
     expect(grid.get(0, 0)).toBe("a");
@@ -256,6 +252,55 @@ describe("Grid2d", () => {
         "x",
       ]);
     });
+  });
+});
+
+describe("InfiniteGrid2d", () => {
+  const makeGrid = () => {
+    const grid = new InfiniteGrid2d("x");
+
+    grid.set(0, 0, "a");
+    grid.set(1, 0, "b");
+    grid.set(2, 0, "c");
+    grid.set(0, 1, "d");
+    grid.set(1, 1, "e");
+
+    return grid;
+  };
+
+  it("should construct", () => {
+    const grid = new InfiniteGrid2d("x");
+    expect(grid.defaultValue).toBe("x");
+  });
+
+  it("should grow its dimensions", () => {
+    const grid = makeGrid();
+    expect(grid.minX).toBe(0);
+    expect(grid.maxX).toBe(2);
+    expect(grid.minY).toBe(0);
+    expect(grid.maxY).toBe(1);
+
+    grid.set(100_000_000, 32, "f");
+
+    expect(grid.minX).toBe(0);
+    expect(grid.maxX).toBe(100_000_000);
+    expect(grid.minY).toBe(0);
+    expect(grid.maxY).toBe(32);
+
+    grid.set(-100_000, -64, "g");
+
+    expect(grid.minX).toBe(-100_000);
+    expect(grid.maxX).toBe(100_000_000);
+    expect(grid.minY).toBe(-64);
+    expect(grid.maxY).toBe(32);
+
+    grid.delete(100_000_000, 32);
+
+    // cant ever shrink without a full scan
+    expect(grid.minX).toBe(-100_000);
+    expect(grid.maxX).toBe(100_000_000);
+    expect(grid.minY).toBe(-64);
+    expect(grid.maxY).toBe(32);
   });
 });
 

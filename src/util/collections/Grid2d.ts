@@ -56,6 +56,10 @@ export class Point2d {
     return new Point2d(pointObj.x, pointObj.y);
   }
 
+  equivalentTo(x: number, y: number): boolean {
+    return this.x === x && this.y === y;
+  }
+
   equals(point: Point2d): boolean {
     return this.x === point?.x && this.y === point?.y;
   }
@@ -89,6 +93,8 @@ class BaseGrid2d<T> {
   protected _maxY: number;
 
   protected checkBounds = (_x: number, _y: number): void | string => {};
+
+  protected setObserver = (_x: number, _y: number) => {};
 
   constructor(
     defaultValue: T,
@@ -139,6 +145,7 @@ class BaseGrid2d<T> {
   set(x: number, y: number, value: T) {
     this.checkBoundsOrThrow(x, y);
     this.grid.set(Point2d.point2dString(x, y), value);
+    this.setObserver(x, y);
   }
 
   getPoint(point: Point2d): T {
@@ -315,4 +322,19 @@ export class InfiniteGrid2d<T> extends BaseGrid2d<T> {
   constructor(defaultValue: T) {
     super(defaultValue, 0, 0, 0, 0);
   }
+
+  protected setObserver = (x: number, y: number) => {
+    if (this._minX > x) {
+      this._minX = x;
+    }
+    if (this._maxX < x) {
+      this._maxX = x;
+    }
+    if (this._minY > y) {
+      this._minY = y;
+    }
+    if (this._maxY < y) {
+      this._maxY = y;
+    }
+  };
 }
