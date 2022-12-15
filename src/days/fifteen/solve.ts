@@ -15,13 +15,13 @@ const ex = new Executor(import.meta.url);
 
 // deno-lint-ignore no-unused-vars
 await ex.part1(async ({ text, lines }, console, tick) => {
-  if (lines.length > 20) return;
+  // if (lines.length > 20) return;
 
   type Elem = "B" | "S" | "." | "#";
   const grid = new InfiniteGrid2d<Elem>(".");
 
-  const focusY = 10;
-  // const focusY = 2000000;
+  // const focusY = 10;
+  const focusY = 2000000;
   const occupied = new Set<number>();
 
   for (const line of lines) {
@@ -49,7 +49,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
 
     if (sensorPoint.manhattanDistanceTo(fakeSensorPoint) <= distance) {
       const adjustedDistance =
-        distance - sensorPoint.manhattanDistanceTo(fakeSensorPoint);
+        distance - sensorPoint.manhattanDistanceTo(fakeSensorPoint) + 1;
 
       console.log({
         sensorPoint,
@@ -62,15 +62,15 @@ await ex.part1(async ({ text, lines }, console, tick) => {
       for (let i = 0; i < adjustedDistance; i++) {
         const point1 = fakeSensorPoint.x + i;
         const point2 = fakeSensorPoint.x - i;
-        occupied.add(point1);
-        occupied.add(point2);
 
         if (!grid.has(point1, focusY)) {
-          grid.set(point1, focusY, "#");
+          // grid.set(point1, focusY, "#");
+          occupied.add(point1);
         }
 
         if (!grid.has(point2, focusY)) {
-          grid.set(point2, focusY, "#");
+          // grid.set(point2, focusY, "#");
+          occupied.add(point2);
         }
       }
     }
