@@ -80,9 +80,12 @@ export class Point2d {
 }
 
 export class Grid2d<T> {
-  readonly width: number;
-  readonly height: number;
-  readonly unbounded: boolean;
+  readonly dimensions:
+    | "unbounded"
+    | Readonly<{
+        width: number;
+        height: number;
+      }>;
   readonly defaultValue: T;
   private grid: Map<Point2dString, T>;
 
@@ -92,9 +95,11 @@ export class Grid2d<T> {
     defaultValue: T,
     unbounded = false
   ) {
-    this.width = width;
-    this.height = height;
-    this.unbounded = unbounded;
+    if (unbounded) {
+      this.dimensions = "unbounded";
+    } else {
+      this.dimensions = { width, height };
+    }
     this.defaultValue = defaultValue;
     this.grid = new Map();
   }
@@ -104,10 +109,25 @@ export class Grid2d<T> {
     return grid;
   }
 
+  get width(): number {
+    if (this.dimensions === "unbounded") throw new Error("unbounded grid");
+    return this.dimensions.width;
+  }
+
+  get height(): number {
+    if (this.dimensions === "unbounded") throw new Error("unbounded grid");
+    return this.dimensions.height;
+  }
+
+  get size(): number {
+    return this.grid.size;
+  }
+
   private checkBounds(x: number, y: number) {
-    if (this.unbounded) return;
-    if (x < 0 || x >= this.width) throw new Error("x out of bounds");
-    if (y < 0 || y >= this.height) throw new Error("y out of bounds");
+    if (this.dimensions === "unbounded") return;
+    if (x < 0 || x >= this.dimensions.width) throw new Error("x out of bounds");
+    if (y < 0 || y >= this.dimensions.height)
+      throw new Error("y out of bounds");
   }
 
   get(x: number, y: number): T {

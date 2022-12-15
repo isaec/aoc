@@ -19,6 +19,12 @@ describe("Grid2d", () => {
     expect(grid.height).toBe(4);
   });
 
+  it("should construct unbounded", () => {
+    const grid = Grid2d.unbounded("x");
+    expect(() => grid.width).toThrow();
+    expect(() => grid.height).toThrow();
+  });
+
   it("should get", () => {
     const grid = makeGrid();
     expect(grid.get(0, 0)).toBe("a");
