@@ -218,15 +218,15 @@ class BaseGrid2d<T> {
       case iterationOrigin.topLeft:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = minY; y < maxY; y++) {
-              for (let x = minX; x < maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+              for (let x = minX; x <= maxX; x++) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = minX; x < maxX; x++) {
-              for (let y = 0; y < maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+              for (let y = minY; y <= maxY; y++) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -236,7 +236,7 @@ class BaseGrid2d<T> {
       case iterationOrigin.topRight:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = 0; y < maxY; y++) {
+            for (let y = minY; y <= maxY; y++) {
               for (let x = maxX; x >= minX; x--) {
                 points.push(new Point2d(x, y));
               }
@@ -244,7 +244,7 @@ class BaseGrid2d<T> {
             break;
           case iterationDirection.vertical:
             for (let x = maxX; x >= minX; x--) {
-              for (let y = 0; y < maxY; y++) {
+              for (let y = minY; y <= maxY; y++) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -255,13 +255,13 @@ class BaseGrid2d<T> {
         switch (direction) {
           case iterationDirection.horizontal:
             for (let y = maxY; y >= minY; y--) {
-              for (let x = minX; x < maxX; x++) {
+              for (let x = minX; x <= maxX; x++) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = minX; x < maxX; x++) {
+            for (let x = minX; x <= maxX; x++) {
               for (let y = maxY; y >= minY; y--) {
                 points.push(new Point2d(x, y));
               }
