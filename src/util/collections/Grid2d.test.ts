@@ -302,6 +302,46 @@ describe("InfiniteGrid2d", () => {
     expect(grid.minY).toBe(-64);
     expect(grid.maxY).toBe(32);
   });
+
+  it("should allow getting and setting arbitrarily", () => {
+    const grid = makeGrid();
+
+    expect(grid.get(0, 0)).toBe("a");
+    expect(grid.get(1, 0)).toBe("b");
+    expect(grid.get(2, 0)).toBe("c");
+    expect(grid.get(0, 1)).toBe("d");
+    expect(grid.get(1, 1)).toBe("e");
+    expect(grid.get(2, 1)).toBe("x");
+    expect(grid.get(3, 1)).toBe("x");
+    expect(grid.get(0, 2)).toBe("x");
+    expect(grid.get(1, 2)).toBe("x");
+    expect(grid.get(2, 2)).toBe("x");
+    expect(grid.get(3, 2)).toBe("x");
+
+    grid.set(0, 0, "f");
+    grid.set(1, 0, "g");
+
+    expect(grid.get(0, 0)).toBe("f");
+    expect(grid.get(1, 0)).toBe("g");
+
+    grid.delete(0, 0);
+
+    expect(grid.get(0, 0)).toBe("x");
+
+    expect(grid.get(1_000, 1_000)).toBe("x");
+
+    grid.set(1_000, 1_000, "!!!");
+
+    expect(grid.get(1_000, 1_000)).toBe("!!!");
+  });
+
+  it("should iterate in default order", () => {
+    const grid = makeGrid();
+    const items: string[] = [];
+    grid.iterate().forEach(([item]) => items.push(item));
+
+    expect(items).toEqual(["a", "b", "c", "d", "e", "x"]);
+  });
 });
 
 describe("Point2d", () => {
