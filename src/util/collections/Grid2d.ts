@@ -20,6 +20,10 @@ type PointObj = {
 
 type Point2dString = string & { __point2dString: never };
 
+type ToStringAble = {
+  toString: () => string;
+};
+
 export class Point2d {
   readonly x: number;
   readonly y: number;
@@ -83,7 +87,7 @@ export class Point2d {
   }
 }
 
-class BaseGrid2d<T> {
+class BaseGrid2d<T extends ToStringAble> {
   readonly defaultValue: T;
   private grid: Map<Point2dString, T>;
 
@@ -208,6 +212,51 @@ class BaseGrid2d<T> {
     return points.map((point) => [this.getUncheckedPoint(point), point]);
   }
 
+  printView(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    printValue: (value: T) => string = (value: { toString(): string }) =>
+      value.toString()
+  ): void {
+    const totalCells = (maxX - minX + 1) * (maxY - minY + 1);
+    if (totalCells > 5000) {
+      console.log(
+        `Grid is too large to print (${totalCells} cells, max 1000).`
+      );
+      return;
+    }
+
+    let maxCellChars = 0;
+    const width = maxX - minX + 1;
+    const cells: string[] = [];
+    for (const point of Grid2d.generateIterationPoints(
+      iterationOrigin.topLeft,
+      iterationDirection.horizontal,
+      minX,
+      maxX,
+      minY,
+      maxY
+    )) {
+      const str = printValue(this.getUncheckedPoint(point));
+      maxCellChars = Math.max(maxCellChars, str.length);
+      cells.push(str);
+    }
+
+    const cellWidth = maxCellChars + 1;
+    const paddedCells = cells.map((cell) => cell.padEnd(cellWidth, " "));
+
+    for (let i = 0; i < width; i++) {
+      const row = paddedCells.slice(i * width, (i + 1) * width);
+      console.log(row.join(""));
+    }
+  }
+
+  print(printValue?: (value: T) => string): void {
+    this.printView(this.minX, this.maxX, this.minY, this.maxY, printValue);
+  }
+
   static readonly iterationOrigin = iterationOrigin;
   static readonly iterationDirection = iterationDirection;
 
@@ -300,7 +349,7 @@ class BaseGrid2d<T> {
   }
 }
 
-export class Grid2d<T> extends BaseGrid2d<T> {
+export class Grid2d<T extends ToStringAble> extends BaseGrid2d<T> {
   constructor(
     defaultValue: T,
     minX: number,
@@ -318,7 +367,7 @@ export class Grid2d<T> extends BaseGrid2d<T> {
   };
 }
 
-export class InfiniteGrid2d<T> extends BaseGrid2d<T> {
+export class InfiniteGrid2d<T extends ToStringAble> extends BaseGrid2d<T> {
   constructor(defaultValue: T) {
     super(defaultValue, 0, 0, 0, 0);
   }

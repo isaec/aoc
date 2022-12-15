@@ -251,6 +251,8 @@ describe("Grid2d", () => {
         "x",
         "x",
       ]);
+
+      grid.print();
     });
   });
 });
@@ -301,6 +303,8 @@ describe("InfiniteGrid2d", () => {
     expect(grid.maxX).toBe(100_000_000);
     expect(grid.minY).toBe(-64);
     expect(grid.maxY).toBe(32);
+
+    grid.print();
   });
 
   it("should allow getting and setting arbitrarily", () => {
