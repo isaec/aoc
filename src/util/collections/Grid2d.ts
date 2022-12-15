@@ -62,8 +62,13 @@ export class Point {
     return `(${this.x}, ${this.y})`;
   }
 
+  // bad implementation...
   static fromString(str: string): Point {
-    const [x, y] = str.split(",").map(Number);
+    if (str.charAt(0) !== "(" || str.charAt(str.length - 1) !== ")")
+      throw new Error(`Invalid point: ${str}`);
+    const [x, y] = str.slice(1, -1).split(", ").map(Number);
+    if (Number.isNaN(x) || Number.isNaN(y))
+      throw new Error(`Invalid point: ${str}, parsed as (${x}, ${y})`);
     return new Point(x, y);
   }
 }

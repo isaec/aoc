@@ -141,6 +141,26 @@ describe("Point", () => {
       expect(point.equals(point2)).toBe(false);
     });
   });
+
+  it("should be able to be converted to a string", () => {
+    const point = new Point(1, 2);
+    expect(point.toString()).toBe("(1, 2)");
+  });
+
+  it("should be able to be constructed from a string", () => {
+    const point = Point.fromString("(1, 2)");
+    const point2 = new Point(1, 2);
+    expect(point.x).toBe(1);
+    expect(point.y).toBe(2);
+    expect(point.equals(point2)).toBe(true);
+  });
+
+  it("should throw an error when constructed from an invalid string", () => {
+    expect(() => Point.fromString("1, 2")).toThrow();
+    expect(() => Point.fromString("(1, 2")).toThrow();
+    expect(() => Point.fromString("1, 2)")).toThrow();
+    expect(() => Point.fromString("(1, 2)")).not.toThrow();
+  });
 });
 
 run();
