@@ -91,6 +91,56 @@ describe("Point", () => {
       expect(result).not.toBe(point);
     });
   });
+
+  describe("equality", () => {
+    it("should equal equivalent points", () => {
+      const point = new Point(1, 2);
+      expect(point.equals(new Point(1, 2))).toBe(true);
+      expect(point.equals(new Point(3, 4))).toBe(false);
+    });
+
+    it("should equal when the same instance", () => {
+      const point = new Point(1, 2);
+      expect(point.equals(point)).toBe(true);
+    });
+
+    it("should not equal when the other point is an illegal value", () => {
+      const point = new Point(1, 2);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals(null)).toBe(false);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals(undefined)).toBe(false);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals(3)).toBe(false);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals("3")).toBe(false);
+    });
+
+    it("should not equal when the other object is missing a value", () => {
+      const point = new Point(1, 2);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals({ x: 1 })).toBe(false);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals({ y: 2 })).toBe(false);
+    });
+
+    it("should equal when the other object has the right values", () => {
+      const point = new Point(1, 2);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals({ x: 1, y: 2 })).toBe(true);
+      // @ts-expect-error - illegal comparison value intentionally
+      expect(point.equals({ x: 3, y: 4 })).toBe(false);
+    });
+
+    it("should not equal when the point is illegally modified", () => {
+      const point = new Point(1, 2);
+      const point2 = new Point(1, 2);
+      // @ts-expect-error - illegal modification intentionally
+      point2.x = 3;
+
+      expect(point.equals(point2)).toBe(false);
+    });
+  });
 });
 
 run();

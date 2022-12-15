@@ -55,7 +55,7 @@ export class Point {
   }
 
   equals(point: Point): boolean {
-    return this.x === point.x && this.y === point.y;
+    return this.x === point?.x && this.y === point?.y;
   }
 
   toString(): string {
