@@ -68,6 +68,14 @@ export class Point2d {
     return this.x === point?.x && this.y === point?.y;
   }
 
+  diagonalDistanceTo(point: Point2d): number {
+    return Math.max(Math.abs(this.x - point.x), Math.abs(this.y - point.y));
+  }
+
+  manhattanDistanceTo(point: Point2d): number {
+    return Math.abs(this.x - point.x) + Math.abs(this.y - point.y);
+  }
+
   static point2dString(x: number, y: number): Point2dString {
     return `(${x}, ${y})` as Point2dString;
   }
