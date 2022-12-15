@@ -74,8 +74,8 @@ export class Point2d {
 }
 
 export class Grid2d<T> {
-  private width: number;
-  private height: number;
+  readonly width: number;
+  readonly height: number;
   private grid: T[];
 
   constructor(width: number, height: number, defaultValue: T) {
@@ -89,9 +89,13 @@ export class Grid2d<T> {
     if (y < 0 || y >= this.height) throw new Error("y out of bounds");
   }
 
+  private uncheckedGetIndex(x: number, y: number): number {
+    return x + y * this.width;
+  }
+
   private getIndex(x: number, y: number): number {
     this.checkBounds(x, y);
-    return x + y * this.width;
+    return this.uncheckedGetIndex(x, y);
   }
 
   get(x: number, y: number): T {

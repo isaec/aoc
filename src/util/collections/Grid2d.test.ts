@@ -1,5 +1,68 @@
 import { describe, expect, it, run } from "@test_deps";
-import { Point2d } from "./Grid2d.ts";
+import { Grid2d, Point2d } from "@util/collections/Grid2d.ts";
+
+describe("Grid2d", () => {
+  const makeGrid = () => {
+    const grid = new Grid2d(3, 4, "x");
+
+    grid.set(0, 0, "a");
+    grid.set(1, 0, "b");
+    grid.set(2, 0, "c");
+    grid.set(0, 1, "d");
+    grid.set(1, 1, "e");
+
+    return grid;
+  };
+  it("should construct", () => {
+    const grid = makeGrid();
+    expect(grid.width).toBe(3);
+    expect(grid.height).toBe(4);
+  });
+
+  it("should get", () => {
+    const grid = makeGrid();
+    expect(grid.get(0, 0)).toBe("a");
+    expect(grid.get(1, 0)).toBe("b");
+    expect(grid.get(2, 0)).toBe("c");
+    expect(grid.get(0, 1)).toBe("d");
+    expect(grid.get(1, 1)).toBe("e");
+    expect(grid.get(2, 1)).toBe("x");
+    expect(grid.get(0, 2)).toBe("x");
+    expect(grid.get(1, 2)).toBe("x");
+  });
+
+  it("should set", () => {
+    const grid = makeGrid();
+    grid.set(0, 2, "f");
+    grid.set(1, 2, "g");
+    grid.set(2, 2, "h");
+    grid.set(0, 3, "i");
+    grid.set(1, 3, "j");
+    grid.set(2, 3, "k");
+    expect(grid.get(0, 2)).toBe("f");
+    expect(grid.get(1, 2)).toBe("g");
+    expect(grid.get(2, 2)).toBe("h");
+    expect(grid.get(0, 3)).toBe("i");
+    expect(grid.get(1, 3)).toBe("j");
+    expect(grid.get(2, 3)).toBe("k");
+  });
+
+  it("should throw on out of bounds", () => {
+    const grid = makeGrid();
+    expect(() => grid.get(-1, 0)).toThrow();
+    expect(() => grid.get(0, -1)).toThrow();
+    expect(() => grid.get(3, 0)).toThrow();
+    expect(() => grid.get(0, 4)).toThrow();
+  });
+
+  it("should throw on out of bounds set", () => {
+    const grid = makeGrid();
+    expect(() => grid.set(-1, 0, "a")).toThrow();
+    expect(() => grid.set(0, -1, "a")).toThrow();
+    expect(() => grid.set(3, 0, "a")).toThrow();
+    expect(() => grid.set(0, 4, "a")).toThrow();
+  });
+});
 
 describe("Point2d", () => {
   it("should construct", () => {
