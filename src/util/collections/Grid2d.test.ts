@@ -196,6 +196,55 @@ describe("Grid2d", () => {
       ]);
     });
   });
+
+  describe("iterate", () => {
+    it("should iterate in default order", () => {
+      const grid = makeGrid();
+      const items: string[] = [];
+      grid.iterate().forEach(([item]) => items.push(item));
+
+      expect(items).toEqual([
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "x",
+        "x",
+        "x",
+        "x",
+        "x",
+        "x",
+        "x",
+      ]);
+    });
+
+    it("should iterate in order for top-left-vertical", () => {
+      const grid = makeGrid();
+      const items: string[] = [];
+      grid
+        .iterate(
+          Grid2d.iterationOrigin.topLeft,
+          Grid2d.iterationDirection.vertical
+        )
+        .forEach(([item]) => items.push(item));
+
+      expect(items).toEqual([
+        "a",
+        "d",
+        "x",
+        "x",
+        "b",
+        "e",
+        "x",
+        "x",
+        "c",
+        "x",
+        "x",
+        "x",
+      ]);
+    });
+  });
 });
 
 describe("Point2d", () => {

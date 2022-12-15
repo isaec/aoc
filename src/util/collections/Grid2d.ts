@@ -187,8 +187,8 @@ export class Grid2d<T> {
   }
 
   iterate(
-    origin = iterationOrigin.topLeft,
-    direction = iterationDirection.horizontal
+    origin: IterationOrigin = iterationOrigin.topLeft,
+    direction: IterationDirection = iterationDirection.horizontal
   ) {
     const points = Grid2d.generateIterationPoints(
       origin,
