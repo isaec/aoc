@@ -68,6 +68,134 @@ describe("Grid2d", () => {
     expect(() => grid.set(3, 0, "a")).toThrow();
     expect(() => grid.set(0, 4, "a")).toThrow();
   });
+
+  describe("generateIterationPoints", () => {
+    it("should iterate in order for top-left-horizontal", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.topLeft,
+        Grid2d.iterationDirection.horizontal,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(0, 0),
+        new Point2d(1, 0),
+        new Point2d(2, 0),
+        new Point2d(3, 0),
+        new Point2d(4, 0),
+        new Point2d(0, 1),
+        new Point2d(1, 1),
+        new Point2d(2, 1),
+        new Point2d(3, 1),
+        new Point2d(4, 1),
+      ]);
+    });
+
+    it("should iterate in order for top-left-vertical", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.topLeft,
+        Grid2d.iterationDirection.vertical,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(0, 0),
+        new Point2d(0, 1),
+        new Point2d(1, 0),
+        new Point2d(1, 1),
+        new Point2d(2, 0),
+        new Point2d(2, 1),
+        new Point2d(3, 0),
+        new Point2d(3, 1),
+        new Point2d(4, 0),
+        new Point2d(4, 1),
+      ]);
+    });
+
+    it("should iterate in order for top-right-horizontal", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.topRight,
+        Grid2d.iterationDirection.horizontal,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(4, 0),
+        new Point2d(3, 0),
+        new Point2d(2, 0),
+        new Point2d(1, 0),
+        new Point2d(0, 0),
+        new Point2d(4, 1),
+        new Point2d(3, 1),
+        new Point2d(2, 1),
+        new Point2d(1, 1),
+        new Point2d(0, 1),
+      ]);
+    });
+
+    it("should iterate in order for top-right-vertical", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.topRight,
+        Grid2d.iterationDirection.vertical,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(4, 0),
+        new Point2d(4, 1),
+        new Point2d(3, 0),
+        new Point2d(3, 1),
+        new Point2d(2, 0),
+        new Point2d(2, 1),
+        new Point2d(1, 0),
+        new Point2d(1, 1),
+        new Point2d(0, 0),
+        new Point2d(0, 1),
+      ]);
+    });
+
+    it("should iterate in order for bottom-left-horizontal", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.bottomLeft,
+        Grid2d.iterationDirection.horizontal,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(0, 1),
+        new Point2d(1, 1),
+        new Point2d(2, 1),
+        new Point2d(3, 1),
+        new Point2d(4, 1),
+        new Point2d(0, 0),
+        new Point2d(1, 0),
+        new Point2d(2, 0),
+        new Point2d(3, 0),
+        new Point2d(4, 0),
+      ]);
+    });
+
+    it("should iterate in order for bottom-left-vertical", () => {
+      const points = Grid2d.generateIterationPoints(
+        Grid2d.iterationOrigin.bottomLeft,
+        Grid2d.iterationDirection.vertical,
+        5,
+        2
+      );
+      expect(points).toEqual([
+        new Point2d(0, 1),
+        new Point2d(0, 0),
+        new Point2d(1, 1),
+        new Point2d(1, 0),
+        new Point2d(2, 1),
+        new Point2d(2, 0),
+        new Point2d(3, 1),
+        new Point2d(3, 0),
+        new Point2d(4, 1),
+        new Point2d(4, 0),
+      ]);
+    });
+  });
 });
 
 describe("Point2d", () => {

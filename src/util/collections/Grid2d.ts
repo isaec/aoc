@@ -158,4 +158,93 @@ export class Grid2d<T> {
   getPointWithFallback(point: Point2d, fallback: T): T {
     return this.getWithFallback(point.x, point.y, fallback);
   }
+
+  static readonly iterationOrigin = iterationOrigin;
+  static readonly iterationDirection = iterationDirection;
+
+  static generateIterationPoints(
+    origin: IterationOrigin,
+    direction: IterationDirection,
+    width: number,
+    height: number
+  ): Point2d[] {
+    const points: Point2d[] = [];
+
+    switch (origin) {
+      case iterationOrigin.topLeft:
+        switch (direction) {
+          case iterationDirection.horizontal:
+            for (let y = 0; y < height; y++) {
+              for (let x = 0; x < width; x++) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+          case iterationDirection.vertical:
+            for (let x = 0; x < width; x++) {
+              for (let y = 0; y < height; y++) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+        }
+        break;
+      case iterationOrigin.topRight:
+        switch (direction) {
+          case iterationDirection.horizontal:
+            for (let y = 0; y < height; y++) {
+              for (let x = width - 1; x >= 0; x--) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+          case iterationDirection.vertical:
+            for (let x = width - 1; x >= 0; x--) {
+              for (let y = 0; y < height; y++) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+        }
+        break;
+      case iterationOrigin.bottomLeft:
+        switch (direction) {
+          case iterationDirection.horizontal:
+            for (let y = height - 1; y >= 0; y--) {
+              for (let x = 0; x < width; x++) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+          case iterationDirection.vertical:
+            for (let x = 0; x < width; x++) {
+              for (let y = height - 1; y >= 0; y--) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+        }
+        break;
+      case iterationOrigin.bottomRight:
+        switch (direction) {
+          case iterationDirection.horizontal:
+            for (let y = height - 1; y >= 0; y--) {
+              for (let x = width - 1; x >= 0; x--) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+          case iterationDirection.vertical:
+            for (let x = width - 1; x >= 0; x--) {
+              for (let y = height - 1; y >= 0; y--) {
+                points.push(new Point2d(x, y));
+              }
+            }
+            break;
+        }
+        break;
+    }
+
+    return points;
+  }
 }
