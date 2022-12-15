@@ -145,6 +145,11 @@ export class Grid2d<T> {
     return this.get(point.x, point.y);
   }
 
+  private getUncheckedPoint(point: Point2d): T {
+    const value = this.grid.get(point.toString());
+    return value ?? this.defaultValue;
+  }
+
   setPoint(point: Point2d, value: T) {
     this.set(point.x, point.y, value);
   }
@@ -157,6 +162,44 @@ export class Grid2d<T> {
 
   getPointWithFallback(point: Point2d, fallback: T): T {
     return this.getWithFallback(point.x, point.y, fallback);
+  }
+
+  has(x: number, y: number): boolean {
+    this.checkBounds(x, y);
+    return this.grid.has(Point2d.point2dString(x, y));
+  }
+
+  hasPoint(point: Point2d): boolean {
+    return this.has(point.x, point.y);
+  }
+
+  delete(x: number, y: number) {
+    this.checkBounds(x, y);
+    this.grid.delete(Point2d.point2dString(x, y));
+  }
+
+  deletePoint(point: Point2d) {
+    this.delete(point.x, point.y);
+  }
+
+  clear() {
+    this.grid.clear();
+  }
+
+  iterate(
+    origin = iterationOrigin.topLeft,
+    direction = iterationDirection.horizontal
+  ) {
+    const points = Grid2d.generateIterationPoints(
+      origin,
+      direction,
+      this.width,
+      this.height
+    );
+
+    return points.map(
+      (point) => [this.getUncheckedPoint(point), point] as const
+    );
   }
 
   static readonly iterationOrigin = iterationOrigin;
