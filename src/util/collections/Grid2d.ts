@@ -79,65 +79,65 @@ export class Point2d {
   }
 }
 
-export class Grid2d<T> {
-  readonly dimensions:
-    | "unbounded"
-    | Readonly<{
-        width: number;
-        height: number;
-      }>;
+class BaseGrid2d<T> {
   readonly defaultValue: T;
   private grid: Map<Point2dString, T>;
 
+  protected _minX: number;
+  protected _maxX: number;
+  protected _minY: number;
+  protected _maxY: number;
+
+  protected checkBounds = (_x: number, _y: number): void | string => {};
+
   constructor(
-    width: number,
-    height: number,
     defaultValue: T,
-    unbounded = false
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number
   ) {
-    if (unbounded) {
-      this.dimensions = "unbounded";
-    } else {
-      this.dimensions = { width, height };
-    }
     this.defaultValue = defaultValue;
     this.grid = new Map();
+    this._minX = minX;
+    this._maxX = maxX;
+    this._minY = minY;
+    this._maxY = maxY;
   }
 
-  static unbounded<T>(defaultValue: T): Grid2d<T> {
-    const grid = new Grid2d(0, 0, defaultValue, true);
-    return grid;
+  get minX(): number {
+    return this._minX;
   }
 
-  get width(): number {
-    if (this.dimensions === "unbounded") throw new Error("unbounded grid");
-    return this.dimensions.width;
+  get maxX(): number {
+    return this._maxX;
   }
 
-  get height(): number {
-    if (this.dimensions === "unbounded") throw new Error("unbounded grid");
-    return this.dimensions.height;
+  get minY(): number {
+    return this._minY;
+  }
+
+  get maxY(): number {
+    return this._maxY;
   }
 
   get size(): number {
     return this.grid.size;
   }
 
-  private checkBounds(x: number, y: number) {
-    if (this.dimensions === "unbounded") return;
-    if (x < 0 || x >= this.dimensions.width) throw new Error("x out of bounds");
-    if (y < 0 || y >= this.dimensions.height)
-      throw new Error("y out of bounds");
+  private checkBoundsOrThrow(x: number, y: number): void {
+    const error = this.checkBounds(x, y);
+    if (error) throw new Error(error);
   }
 
   get(x: number, y: number): T {
-    this.checkBounds(x, y);
+    this.checkBoundsOrThrow(x, y);
     const value = this.grid.get(Point2d.point2dString(x, y));
     return value ?? this.defaultValue;
   }
 
   set(x: number, y: number, value: T) {
-    this.checkBounds(x, y);
+    this.checkBoundsOrThrow(x, y);
     this.grid.set(Point2d.point2dString(x, y), value);
   }
 
@@ -155,7 +155,7 @@ export class Grid2d<T> {
   }
 
   getWithFallback(x: number, y: number, fallback: T): T {
-    this.checkBounds(x, y);
+    this.checkBoundsOrThrow(x, y);
     const value = this.grid.get(Point2d.point2dString(x, y));
     return value ?? fallback;
   }
@@ -165,7 +165,7 @@ export class Grid2d<T> {
   }
 
   has(x: number, y: number): boolean {
-    this.checkBounds(x, y);
+    this.checkBoundsOrThrow(x, y);
     return this.grid.has(Point2d.point2dString(x, y));
   }
 
@@ -174,7 +174,7 @@ export class Grid2d<T> {
   }
 
   delete(x: number, y: number) {
-    this.checkBounds(x, y);
+    this.checkBoundsOrThrow(x, y);
     this.grid.delete(Point2d.point2dString(x, y));
   }
 
@@ -189,17 +189,16 @@ export class Grid2d<T> {
   iterate(
     origin: IterationOrigin = iterationOrigin.topLeft,
     direction: IterationDirection = iterationDirection.horizontal
-  ) {
+  ): [T, Point2d][] {
     const points = Grid2d.generateIterationPoints(
       origin,
       direction,
-      this.width,
-      this.height
+      this.minX,
+      this.maxX,
+      this.minY,
+      this.maxY
     );
-
-    return points.map(
-      (point) => [this.getUncheckedPoint(point), point] as const
-    );
+    return points.map((point) => [this.getUncheckedPoint(point), point]);
   }
 
   static readonly iterationOrigin = iterationOrigin;
@@ -208,8 +207,10 @@ export class Grid2d<T> {
   static generateIterationPoints(
     origin: IterationOrigin,
     direction: IterationDirection,
-    width: number,
-    height: number
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number
   ): Point2d[] {
     const points: Point2d[] = [];
 
@@ -217,15 +218,15 @@ export class Grid2d<T> {
       case iterationOrigin.topLeft:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = 0; y < height; y++) {
-              for (let x = 0; x < width; x++) {
+            for (let y = minY; y < maxY; y++) {
+              for (let x = minX; x < maxX; x++) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = 0; x < width; x++) {
-              for (let y = 0; y < height; y++) {
+            for (let x = minX; x < maxX; x++) {
+              for (let y = 0; y < maxY; y++) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -235,15 +236,15 @@ export class Grid2d<T> {
       case iterationOrigin.topRight:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = 0; y < height; y++) {
-              for (let x = width - 1; x >= 0; x--) {
+            for (let y = 0; y < maxY; y++) {
+              for (let x = maxX; x >= minX; x--) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = width - 1; x >= 0; x--) {
-              for (let y = 0; y < height; y++) {
+            for (let x = maxX; x >= minX; x--) {
+              for (let y = 0; y < maxY; y++) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -253,15 +254,15 @@ export class Grid2d<T> {
       case iterationOrigin.bottomLeft:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = height - 1; y >= 0; y--) {
-              for (let x = 0; x < width; x++) {
+            for (let y = maxY; y >= minY; y--) {
+              for (let x = minX; x < maxX; x++) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = 0; x < width; x++) {
-              for (let y = height - 1; y >= 0; y--) {
+            for (let x = minX; x < maxX; x++) {
+              for (let y = maxY; y >= minY; y--) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -271,15 +272,15 @@ export class Grid2d<T> {
       case iterationOrigin.bottomRight:
         switch (direction) {
           case iterationDirection.horizontal:
-            for (let y = height - 1; y >= 0; y--) {
-              for (let x = width - 1; x >= 0; x--) {
+            for (let y = maxY; y >= minY; y--) {
+              for (let x = maxX; x >= minX; x--) {
                 points.push(new Point2d(x, y));
               }
             }
             break;
           case iterationDirection.vertical:
-            for (let x = width - 1; x >= 0; x--) {
-              for (let y = height - 1; y >= 0; y--) {
+            for (let x = maxX; x >= minX; x--) {
+              for (let y = maxY; y >= minY; y--) {
                 points.push(new Point2d(x, y));
               }
             }
@@ -289,5 +290,29 @@ export class Grid2d<T> {
     }
 
     return points;
+  }
+}
+
+export class Grid2d<T> extends BaseGrid2d<T> {
+  constructor(
+    defaultValue: T,
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number
+  ) {
+    super(defaultValue, minX, maxX, minY, maxY);
+  }
+
+  protected checkBounds = (x: number, y: number): void | string => {
+    if (x < this.minX || x > this.maxX || y < this.minY || y > this.maxY) {
+      return `Point (${x}, ${y}) is out of bounds`;
+    }
+  };
+}
+
+export class InfiniteGrid2d<T> extends BaseGrid2d<T> {
+  constructor(defaultValue: T) {
+    super(defaultValue, 0, 0, 0, 0);
   }
 }

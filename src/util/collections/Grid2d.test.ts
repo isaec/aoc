@@ -1,9 +1,9 @@
 import { describe, expect, it, run } from "@test_deps";
-import { Grid2d, Point2d } from "@util/collections/Grid2d.ts";
+import { Grid2d, InfiniteGrid2d, Point2d } from "@util/collections/Grid2d.ts";
 
 describe("Grid2d", () => {
   const makeGrid = () => {
-    const grid = new Grid2d(3, 4, "x");
+    const grid = new Grid2d("x", 0, 3, 0, 4);
 
     grid.set(0, 0, "a");
     grid.set(1, 0, "b");
@@ -15,14 +15,14 @@ describe("Grid2d", () => {
   };
   it("should construct", () => {
     const grid = makeGrid();
-    expect(grid.width).toBe(3);
-    expect(grid.height).toBe(4);
+    expect(grid.minX).toBe(0);
+    expect(grid.minY).toBe(0);
+    expect(grid.maxX).toBe(3);
+    expect(grid.maxY).toBe(4);
   });
 
-  it("should construct unbounded", () => {
-    const grid = Grid2d.unbounded("x");
-    expect(() => grid.width).toThrow();
-    expect(() => grid.height).toThrow();
+  it("should construct infinite grid", () => {
+    const _grid = new InfiniteGrid2d("x");
   });
 
   it("should get", () => {
@@ -74,8 +74,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.topLeft,
         Grid2d.iterationDirection.horizontal,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(0, 0),
@@ -95,8 +97,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.topLeft,
         Grid2d.iterationDirection.vertical,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(0, 0),
@@ -116,8 +120,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.topRight,
         Grid2d.iterationDirection.horizontal,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(4, 0),
@@ -137,8 +143,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.topRight,
         Grid2d.iterationDirection.vertical,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(4, 0),
@@ -158,8 +166,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.bottomLeft,
         Grid2d.iterationDirection.horizontal,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(0, 1),
@@ -179,8 +189,10 @@ describe("Grid2d", () => {
       const points = Grid2d.generateIterationPoints(
         Grid2d.iterationOrigin.bottomLeft,
         Grid2d.iterationDirection.vertical,
-        5,
-        2
+        0,
+        4,
+        0,
+        1
       );
       expect(points).toEqual([
         new Point2d(0, 1),
