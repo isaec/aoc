@@ -13,6 +13,11 @@ const iterationDirection = {
 type IterationDirection =
   typeof iterationDirection[keyof typeof iterationDirection];
 
+type PointObj = {
+  x: number;
+  y: number;
+};
+
 export class Point {
   readonly x: number;
   readonly y: number;
@@ -28,6 +33,25 @@ export class Point {
 
   subtract(point: Point): Point {
     return new Point(this.x - point.x, this.y - point.y);
+  }
+
+  multiply(point: Point): Point {
+    return new Point(this.x * point.x, this.y * point.y);
+  }
+
+  divide(point: Point): Point {
+    return new Point(this.x / point.x, this.y / point.y);
+  }
+
+  into(fn: (pointObj: PointObj) => Point | PointObj | void): Point {
+    const pointObj = { x: this.x, y: this.y };
+
+    const result = fn(pointObj);
+    if (result instanceof Point) return result;
+
+    if (typeof result === "object") return new Point(result.x, result.y);
+
+    return new Point(pointObj.x, pointObj.y);
   }
 
   equals(point: Point): boolean {
