@@ -3,7 +3,7 @@ import { Grid2d, InfiniteGrid2d, Point2d } from "@util/collections/Grid2d.ts";
 
 describe("Grid2d", () => {
   const makeGrid = () => {
-    const grid = new Grid2d("x", 0, 3, 0, 4);
+    const grid = new Grid2d("x", 0, 2, 0, 3);
 
     grid.set(0, 0, "a");
     grid.set(1, 0, "b");
@@ -17,8 +17,8 @@ describe("Grid2d", () => {
     const grid = makeGrid();
     expect(grid.minX).toBe(0);
     expect(grid.minY).toBe(0);
-    expect(grid.maxX).toBe(3);
-    expect(grid.maxY).toBe(4);
+    expect(grid.maxX).toBe(2);
+    expect(grid.maxY).toBe(3);
   });
 
   it("should construct infinite grid", () => {
