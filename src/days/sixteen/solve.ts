@@ -25,14 +25,13 @@ await ex.part1(async ({ text, lines }, console, tick) => {
 
   const valves = new Map<string, number>();
 
-  const closedValves = new Set<string>();
-  const openValves = new Set<string>();
+  const startingClosedValves = new Set<string>();
 
   for (const line of lines) {
     const [, name, flowRate] = line.match(/Valve (\w+) has flow rate=(\d+);/)!;
     // console.log({ name, flowRate });
     valves.set(name, Number(flowRate));
-    if (flowRate !== "0") closedValves.add(name);
+    if (flowRate !== "0") startingClosedValves.add(name);
 
     // console.log(line);
 
@@ -49,62 +48,75 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     valve: string;
     cost: number;
     value: number;
-    path: string[];
   };
 
-  const pathCache = new Map<string, string[]>();
-  const getPath = (from: string, to: string): readonly string[] => {
+  type State = {
+    currentValve: string;
+    remainingTime: number;
+    totalFlow: number;
+    closedValves: Set<string>;
+  };
+
+  const pathCache = new Map<string, number>();
+  const getPathLength = (from: string, to: string): number => {
     const key = `${from} -> ${to}`;
     if (pathCache.has(key)) return pathCache.get(key)!;
-    const path = graph.shortestPath(from, to)!;
-    pathCache.set(key, path);
-    return path;
+    const pathLength = graph.shortestPath(from, to)!.length;
+    pathCache.set(key, pathLength);
+    return pathLength;
   };
 
-  const getChoices = (currentValve: string, remainingTime: number) => {
-    const choices = Array.from(closedValves.keys());
+  const getChoices = (state: State) => {
+    const choices = Array.from(state.closedValves.keys());
 
     const evalChoices: EvalChoice[] = [];
 
     for (const choice of choices) {
-      const path = graph.shortestPath(currentValve, choice)!.slice(1);
-      const cost = path.length + 1; // add one for opening the valve
-      const value = valves.get(choice)! * (remainingTime - cost);
-      evalChoices.push({ valve: choice, cost, value, path });
+      const cost = getPathLength(state.currentValve, choice);
+      const value = valves.get(choice)! * (state.remainingTime - cost);
+      evalChoices.push({ valve: choice, cost, value });
     }
 
     return evalChoices.sort((a, b) => b.value - a.value);
   };
 
-  const evaluatePosition = (
-    choice: EvalChoice,
-    currentValve: string,
-    remainingTime: number,
-    totalFlow: number
-  ): number => {
-    // O1 knapsack
-    const bestChoice = choices.find((choice) => choice.cost <= remainingTime);
-
-    if (!bestChoice) {
-      return totalFlow;
-    }
-
-    const { valve, cost, value, path } = bestChoice;
-
-    totalFlow += value;
-    remainingTime -= cost;
-
-    closedValves.delete(valve);
-    openValves.add(valve);
-
-    return totalFlow;
+  const applyChoice = (choice: EvalChoice, state: State) => {
+    state.totalFlow += choice.value;
+    state.remainingTime -= choice.cost;
+    state.currentValve = choice.valve;
+    state.closedValves.delete(choice.valve);
   };
 
-  const choices = getChoices("AA", 30);
+  const copyState = (state: State): State => ({
+    currentValve: state.currentValve,
+    remainingTime: state.remainingTime,
+    totalFlow: state.totalFlow,
+    closedValves: new Set(state.closedValves),
+  });
 
-  return choices
-    .map((choice) => evaluatePosition(choice, "AA", 30, 0))
-    .sort((a, b) => b - a)[0];
+  const getBestBranchFlow = (state: State): number => {
+    const choices = getChoices(state);
+    const flows = choices.map((choice) => {
+      const nextState = copyState(state);
+      if (choice.cost > nextState.remainingTime) {
+        return state.totalFlow;
+      }
+      applyChoice(choice, nextState);
+      if (nextState.closedValves.size === 0) {
+        return nextState.totalFlow;
+      }
+      return getBestBranchFlow(nextState);
+    });
+
+    return Math.max(...flows);
+  };
+
+  return getBestBranchFlow({
+    currentValve: "AA",
+    remainingTime: 30,
+    totalFlow: 0,
+    closedValves: startingClosedValves,
+  });
 });
 
 await ex.testPart1([
