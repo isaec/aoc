@@ -1,21 +1,17 @@
 // deno-lint-ignore-file require-await
 import Executor from "@util/executor.ts";
 
-/* the example input
-
-*/
-
 const ex = new Executor(import.meta.url);
 
+const exampleInput = ex.c`
+
+`;
+
 // deno-lint-ignore no-unused-vars
-await ex.part1(async ({ text, lines }, console, tick) => {
-  // goal:
-});
+await ex.part1(async ({ text, lines }, console, tick) => {});
 
 await ex.testPart1([
-  ex.c`
-input
-`()(false),
+  exampleInput()(true),
 
   ex.c`
 input
@@ -23,14 +19,10 @@ input
 ]);
 
 // deno-lint-ignore no-unused-vars
-await ex.part2(async ({ text, lines }, console, tick) => {
-  // goal:
-});
+await ex.part2(async ({ text, lines }, console, tick) => {});
 
 await ex.testPart2([
-  ex.c`
-input
-`()(false),
+  exampleInput()(true),
 
   ex.c`
 input
