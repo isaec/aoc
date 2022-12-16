@@ -355,7 +355,7 @@ export class Graph<T> {
    * @throws if either node is not in the graph
    * @returns an array of nodes representing the shortest path from startNode to endNode, or null if no path exists
    */
-  shortestPath(startNode: T, endNode: T) {
+  shortestPath(startNode: T, endNode: T): T[] | null {
     if (startNode === endNode) return [startNode];
 
     const startNodeAddress = this.nodeAddressMap.get(startNode);
@@ -405,7 +405,7 @@ export class Graph<T> {
     // detect if there is no path
     if (path.length === 1 && path[0] === endNode) return null;
 
-    return path.reverse();
+    return path.reverse() as T[];
   }
 
   shortestPaths(startNodes: T[], endNode: T): Map<T, T[] | null> {
