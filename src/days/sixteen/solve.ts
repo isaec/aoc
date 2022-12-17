@@ -215,10 +215,10 @@ await ex.part2(async ({ text, lines }, console, tick) => {
     state.c2.remainingTime -= choice.c2.cost;
     state.c1.currentValve = choice.c1.valve;
     state.c2.currentValve = choice.c2.valve;
-    if (choice.c1.valve === choice.c2.valve) {
-      // comment this out for performance!
-      throw new Error("invalid state");
-    }
+    // if (choice.c1.valve === choice.c2.valve) {
+    //   // comment this out for performance!
+    //   throw new Error("invalid state");
+    // }
     state.closedValves.delete(choice.c1.valve);
     state.closedValves.delete(choice.c2.valve);
   };

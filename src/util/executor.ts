@@ -77,7 +77,7 @@ const barLog = (
   console.log(
     color(
       `${newline ? "\n" : ""}==== ${str} ${"=".repeat(
-        Deno.consoleSize().columns - (str.length + 6)
+        Math.max(Deno.consoleSize().columns - (str.length + 6), 0)
       )}`
     )
   );
