@@ -166,13 +166,15 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   };
 
   const pathCache = new Map<string, number>();
-  const getPathLength = (from: string, to: string): number => {
-    const key = `${from} -> ${to}`;
-    if (pathCache.has(key)) return pathCache.get(key)!;
-    const pathLength = graph.shortestPath(from, to)!.length;
-    pathCache.set(key, pathLength);
-    return pathLength;
-  };
+  const getPathLength = (from: string, to: string): number =>
+    pathCache.get(`${from} -> ${to}`)!;
+
+  // populate path cache
+  for (const from of valves.keys()) {
+    for (const to of valves.keys()) {
+      pathCache.set(`${from} -> ${to}`, graph.shortestPath(from, to)!.length);
+    }
+  }
 
   const getChoices = (state: State) => {
     const choices = Array.from(state.closedValves.keys());
@@ -185,7 +187,7 @@ await ex.part2(async ({ text, lines }, console, tick) => {
       evalChoices.push({ valve: choice, cost, value });
     }
 
-    return evalChoices.sort((a, b) => b.value - a.value);
+    return evalChoices;
   };
 
   const applyChoice = (choice: EvalChoice, state: State) => {
