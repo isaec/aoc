@@ -40,6 +40,7 @@ await ex.part1(async ({ text, lines }, console, tick) => {
   const width = 7;
 
   let highestRock = 0;
+  let stoppedRocks = 0;
 
   let rockCords: Readonly<Point2d[]> = [];
 
@@ -76,7 +77,45 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     showRock();
   };
 
-  const spawnArray = [spawnRockA, spawnRockB];
+  const spawnRockC = () => {
+    // reverse L shape
+    rockCords = [
+      new Point2d(2, highestRock - 3),
+      new Point2d(3, highestRock - 3),
+      new Point2d(4, highestRock - 3),
+      new Point2d(4, highestRock - 4),
+      new Point2d(4, highestRock - 5),
+    ];
+    showRock();
+  };
+
+  const spawnRockD = () => {
+    rockCords = [
+      new Point2d(2, highestRock - 3),
+      new Point2d(2, highestRock - 4),
+      new Point2d(2, highestRock - 5),
+      new Point2d(2, highestRock - 6),
+    ];
+    showRock();
+  };
+
+  const spawnRockE = () => {
+    rockCords = [
+      new Point2d(2, highestRock - 3),
+      new Point2d(3, highestRock - 3),
+      new Point2d(2, highestRock - 4),
+      new Point2d(3, highestRock - 4),
+    ];
+    showRock();
+  };
+
+  const spawnArray = [
+    spawnRockA,
+    spawnRockB,
+    spawnRockC,
+    spawnRockD,
+    spawnRockE,
+  ];
   let rockIndex = 0;
 
   const spawnRock = () => {
@@ -84,13 +123,12 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     spawnArray[rockIndex++]();
   };
 
-  let i = 0;
   spawnRock();
 
-  while (i++ < 10) {
+  while (stoppedRocks < 10) {
     tick();
     const push = getPush();
-    console.log(push);
+    // console.log(push);
 
     if (push === ">") {
       if (!(rockCords[rockCords.length - 1].x + 1 >= width)) {
@@ -116,27 +154,34 @@ await ex.part1(async ({ text, lines }, console, tick) => {
     }
 
     if (hitRock) {
+      hideRock();
       for (const rockCord of rockCords) {
         grid.setPoint(rockCord, "#");
       }
       let maxRock = 0;
       for (const rockCord of rockCords) {
-        if (rockCord.y > maxRock) maxRock = rockCord.y;
+        if (rockCord.y < maxRock) maxRock = rockCord.y;
       }
+      console.log({ maxRock });
       highestRock = maxRock;
+      stoppedRocks++;
       spawnRock();
+      continue;
     }
 
     hideRock();
     rockCords = rockCords.map((cord) => cord.into(shiftDown));
     showRock();
 
-    grid.print();
+    grid.printView(1, width, highestRock - 3, 0);
+    console.log("");
   }
+
+  return highestRock;
 });
 
 await ex.testPart1([
-  exampleInput()(true),
+  exampleInput(3068)(true),
 
   ex.c`
 input
