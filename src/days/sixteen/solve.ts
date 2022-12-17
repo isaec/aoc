@@ -223,16 +223,10 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
   return getBestBranchFlow({
     currentValve: "AA",
-    remainingTime: 30,
+    remainingTime: 26,
     totalFlow: 0,
     closedValves: startingClosedValves,
   });
 });
 
-await ex.testPart2([
-  exampleInput(1707)(false),
-
-  ex.c`
-input.txt
-`(1737)(true),
-]);
+await ex.testPart2([exampleInput(1707)(true)]);
