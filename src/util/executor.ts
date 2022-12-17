@@ -94,7 +94,7 @@ const formatNumber = (n: number) => numberFormatter.format(n);
 
 const setClipboard = async (str: string) => {
   const p = Deno.run({
-    cmd: ["xclip", "-selection", "clipboard"],
+    cmd: ["xclip", "-selection", "primary"],
     stdin: "piped",
   });
   await p.stdin.write(new TextEncoder().encode(str));
