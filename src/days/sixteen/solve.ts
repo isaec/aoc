@@ -152,15 +152,26 @@ await ex.part2(async ({ text, lines }, console, tick) => {
     graph.addEdges(name, tunnels);
   }
 
-  type EvalChoice = {
+  type CreatureEvalChoice = {
     valve: string;
     cost: number;
     value: number;
   };
 
+  type EvalChoice = {
+    c1: CreatureEvalChoice;
+    c2: CreatureEvalChoice;
+  };
+
   type State = {
-    currentValve: string;
-    remainingTime: number;
+    c1: {
+      currentValve: string;
+      remainingTime: number;
+    };
+    c2: {
+      currentValve: string;
+      remainingTime: number;
+    };
     totalFlow: number;
     closedValves: Set<string>;
   };
@@ -181,25 +192,46 @@ await ex.part2(async ({ text, lines }, console, tick) => {
 
     const evalChoices: EvalChoice[] = [];
 
-    for (const choice of choices) {
-      const cost = getPathLength(state.currentValve, choice);
-      const value = valves.get(choice)! * (state.remainingTime - cost);
-      evalChoices.push({ valve: choice, cost, value });
+    for (const choice1 of choices) {
+      for (const choice2 of choices) {
+        if (choice1 === choice2) continue;
+        const cost1 = getPathLength(state.c1.currentValve, choice1);
+        const cost2 = getPathLength(state.c2.currentValve, choice2);
+        const value1 = valves.get(choice1)! * (state.c1.remainingTime - cost1);
+        const value2 = valves.get(choice2)! * (state.c2.remainingTime - cost2);
+        evalChoices.push({
+          c1: { valve: choice1, cost: cost1, value: value1 },
+          c2: { valve: choice2, cost: cost2, value: value2 },
+        });
+      }
     }
 
     return evalChoices;
   };
 
   const applyChoice = (choice: EvalChoice, state: State) => {
-    state.totalFlow += choice.value;
-    state.remainingTime -= choice.cost;
-    state.currentValve = choice.valve;
-    state.closedValves.delete(choice.valve);
+    state.totalFlow += choice.c1.value + choice.c2.value;
+    state.c1.remainingTime -= choice.c1.cost;
+    state.c2.remainingTime -= choice.c2.cost;
+    state.c1.currentValve = choice.c1.valve;
+    state.c2.currentValve = choice.c2.valve;
+    if (choice.c1.valve === choice.c2.valve) {
+      // comment this out for performance!
+      throw new Error("invalid state");
+    }
+    state.closedValves.delete(choice.c1.valve);
+    state.closedValves.delete(choice.c2.valve);
   };
 
   const copyState = (state: State): State => ({
-    currentValve: state.currentValve,
-    remainingTime: state.remainingTime,
+    c1: {
+      currentValve: state.c1.currentValve,
+      remainingTime: state.c1.remainingTime,
+    },
+    c2: {
+      currentValve: state.c2.currentValve,
+      remainingTime: state.c2.remainingTime,
+    },
     totalFlow: state.totalFlow,
     closedValves: new Set(state.closedValves),
   });
@@ -207,7 +239,7 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   const getBestBranchFlow = (state: State): number => {
     const choices = getChoices(state);
     const flows = choices.map((choice) => {
-      if (choice.cost > state.remainingTime) {
+      if (choice.c1.cost > state.c1.remainingTime) {
         return state.totalFlow;
       }
       const nextState = copyState(state);
@@ -222,8 +254,14 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   };
 
   return getBestBranchFlow({
-    currentValve: "AA",
-    remainingTime: 26,
+    c1: {
+      currentValve: "AA",
+      remainingTime: 26,
+    },
+    c2: {
+      currentValve: "AA",
+      remainingTime: 26,
+    },
     totalFlow: 0,
     closedValves: startingClosedValves,
   });
