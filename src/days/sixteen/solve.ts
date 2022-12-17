@@ -207,10 +207,10 @@ await ex.part2(async ({ text, lines }, console, tick) => {
   const getBestBranchFlow = (state: State): number => {
     const choices = getChoices(state);
     const flows = choices.map((choice) => {
-      const nextState = copyState(state);
-      if (choice.cost > nextState.remainingTime) {
+      if (choice.cost > state.remainingTime) {
         return state.totalFlow;
       }
+      const nextState = copyState(state);
       applyChoice(choice, nextState);
       if (nextState.closedValves.size === 0) {
         return nextState.totalFlow;
